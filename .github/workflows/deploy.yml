@@ -36,10 +36,13 @@ jobs:
           REACT_APP_CLOUDINARY_CLOUD_NAME: ${{ secrets.REACT_APP_CLOUDINARY_CLOUD_NAME }}
           REACT_APP_CLOUDINARY_UPLOAD_PRESET: ${{ secrets.REACT_APP_CLOUDINARY_UPLOAD_PRESET }}
 
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Write service account file
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
+
       - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live
-          projectId: tracepoint-system
+        run: firebase deploy --only hosting --project tracepoint-system
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
