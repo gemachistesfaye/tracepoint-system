@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from "react";
-import {
-  getAllItems, getAllUsers, getAllClaims,
-  updateClaim, updateItem, deleteItem,
-  updateUserRole, addNotification,
-} from "../firebase/firestore";
-import { formatDate, STATUS_COLORS, STATUS_LABELS } from "../utils/helpers";
+import { getAllItems, getAllUsers, getAllClaims, updateClaim, updateItem, deleteItem, updateUserRole, addNotification } from "../firebase/firestore";
+import { formatDate } from "../utils/helpers";
 import toast from "react-hot-toast";
-import {
-  Users, Package, FileText, CheckCircle, XCircle,
-  Trash2, Shield, ShieldOff, Loader2, BarChart3,
-} from "lucide-react";
+import { Users, Package, FileText, CheckCircle, XCircle, Trash2, Shield, ShieldOff, Loader2, BarChart3, TrendingUp, AlertCircle } from "lucide-react";
 
 const AdminDashboard = () => {
   const [items, setItems] = useState([]);
@@ -22,27 +15,20 @@ const AdminDashboard = () => {
   const load = async () => {
     setLoading(true);
     const [i, u, c] = await Promise.all([getAllItems(), getAllUsers(), getAllClaims()]);
-    setItems(i);
-    setUsers(u);
-    setClaims(c);
-    setLoading(false);
+    setItems(i); setUsers(u); setClaims(c); setLoading(false);
   };
-
   useEffect(() => { load(); }, []);
 
-  // ── Claims ─────────────────────────────────────────────────────────────────
   const handleClaim = async (claim, action) => {
     setProcessingId(claim.id);
     try {
       await updateClaim(claim.id, { status: action });
       if (action === "approved") {
         await updateItem(claim.itemId, { status: "resolved" });
-        await addNotification(claim.claimantId,
-          `Your claim for "${claim.itemTitle}" has been approved! Contact the reporter to collect it.`, "success");
+        await addNotification(claim.claimantId, `Your claim for "${claim.itemTitle}" has been approved!`, "success");
       } else {
         await updateItem(claim.itemId, { status: "open" });
-        await addNotification(claim.claimantId,
-          `Your claim for "${claim.itemTitle}" was rejected. Please contact admin for details.`, "error");
+        await addNotification(claim.claimantId, `Your claim for "${claim.itemTitle}" was rejected.`, "error");
       }
       toast.success(`Claim ${action}`);
       await load();
@@ -50,257 +36,189 @@ const AdminDashboard = () => {
     setProcessingId(null);
   };
 
-  // ── Items ──────────────────────────────────────────────────────────────────
   const handleDeleteItem = async (item) => {
     if (!window.confirm("Delete this item?")) return;
     setProcessingId(item.id);
-    try {
-      await deleteItem(item.id);
-      toast.success("Item deleted");
-      await load();
-    } catch { toast.error("Delete failed"); }
+    try { await deleteItem(item.id); toast.success("Deleted"); await load(); }
+    catch { toast.error("Delete failed"); }
     setProcessingId(null);
   };
 
-  // ── Users ──────────────────────────────────────────────────────────────────
   const toggleRole = async (user) => {
     const newRole = user.role === "admin" ? "user" : "admin";
     setProcessingId(user.id);
-    try {
-      await updateUserRole(user.id, newRole);
-      toast.success(`${user.name} is now ${newRole}`);
-      await load();
-    } catch { toast.error("Role update failed"); }
+    try { await updateUserRole(user.id, newRole); toast.success(`${user.name} is now ${newRole}`); await load(); }
+    catch { toast.error("Failed"); }
     setProcessingId(null);
   };
 
+  const pendingClaims = claims.filter(c => c.status === "pending");
+  const resolved = items.filter(i => i.status === "resolved");
+  const recoveryRate = items.length > 0 ? Math.round((resolved.length / items.length) * 100) : 0;
+
   const stats = [
-    { label: "Total Users", value: users.length, icon: <Users size={20} />, color: "text-blue-600 bg-blue-50" },
-    { label: "Total Items", value: items.length, icon: <Package size={20} />, color: "text-purple-600 bg-purple-50" },
-    { label: "Pending Claims", value: claims.filter(c => c.status === "pending").length, icon: <FileText size={20} />, color: "text-yellow-600 bg-yellow-50" },
-    { label: "Resolved", value: items.filter(i => i.status === "resolved").length, icon: <CheckCircle size={20} />, color: "text-emerald-600 bg-emerald-50" },
+    { label: "Total Users", value: users.length, icon: <Users size={20} />, color: "blue", sub: `${users.filter(u => u.role === "admin").length} admins` },
+    { label: "Total Items", value: items.length, icon: <Package size={20} />, color: "purple", sub: `${items.filter(i => i.type === "lost").length} lost · ${items.filter(i => i.type === "found").length} found` },
+    { label: "Pending Claims", value: pendingClaims.length, icon: <AlertCircle size={20} />, color: "yellow", sub: "awaiting review" },
+    { label: "Recovery Rate", value: `${recoveryRate}%`, icon: <TrendingUp size={20} />, color: "emerald", sub: `${resolved.length} resolved` },
   ];
+
+  const colorMap = {
+    blue: "bg-blue-500/10 text-blue-400",
+    purple: "bg-purple-500/10 text-purple-400",
+    yellow: "bg-yellow-500/10 text-yellow-400",
+    emerald: "bg-emerald-500/10 text-emerald-400",
+  };
 
   const tabs = [
     { key: "overview", label: "Overview" },
-    { key: "claims", label: `Claims (${claims.filter(c => c.status === "pending").length})` },
+    { key: "claims", label: `Claims ${pendingClaims.length > 0 ? `(${pendingClaims.length})` : ""}` },
     { key: "items", label: "All Items" },
     { key: "users", label: "Users" },
   ];
 
-  const tdClass = "px-4 py-3 text-sm text-gray-700";
-  const thClass = "px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide text-left";
+  const th = "px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wide text-left";
+  const td = "px-4 py-3 text-sm text-slate-300";
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="bg-blue-600 text-white p-2.5 rounded-xl">
-          <BarChart3 size={22} />
-        </div>
+      <div className="flex items-center gap-3 mb-8">
+        <div className="bg-blue-600/20 text-blue-400 p-3 rounded-2xl"><BarChart3 size={22} /></div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-sm text-gray-500">TracePoint — Haramaya University</p>
+          <h1 className="text-2xl font-black text-white">Admin Dashboard</h1>
+          <p className="text-sm text-slate-400">TracePoint · Haramaya University</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit mb-6 flex-wrap">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === t.key ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {t.label}
-          </button>
+      <div className="flex gap-1 bg-white/5 border border-white/8 p-1 rounded-2xl w-fit mb-6 flex-wrap">
+        {tabs.map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+              tab === t.key ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"
+            }`}>{t.label}</button>
         ))}
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 size={28} className="animate-spin text-blue-600" />
-        </div>
+        <div className="flex justify-center py-20"><Loader2 size={28} className="animate-spin text-blue-500" /></div>
       ) : (
         <>
-          {/* ── Overview ── */}
           {tab === "overview" && (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {stats.map((s) => (
-                <div key={s.label} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-                  <div className={`inline-flex p-2.5 rounded-xl mb-3 ${s.color}`}>{s.icon}</div>
-                  <p className="text-2xl font-bold text-gray-900">{s.value}</p>
-                  <p className="text-sm text-gray-500 mt-0.5">{s.label}</p>
+              {stats.map(s => (
+                <div key={s.label} className="bg-white/3 border border-white/8 rounded-2xl p-5">
+                  <div className={`inline-flex p-2.5 rounded-xl mb-3 ${colorMap[s.color]}`}>{s.icon}</div>
+                  <p className="text-3xl font-black text-white">{s.value}</p>
+                  <p className="text-sm text-slate-400 mt-0.5">{s.label}</p>
+                  <p className="text-xs text-slate-500 mt-1">{s.sub}</p>
                 </div>
               ))}
             </div>
           )}
 
-          {/* ── Claims ── */}
           {tab === "claims" && (
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-100">
-                  <tr>
-                    <th className={thClass}>Item</th>
-                    <th className={thClass}>Claimant</th>
-                    <th className={thClass}>Proof</th>
-                    <th className={thClass}>Date</th>
-                    <th className={thClass}>Status</th>
-                    <th className={thClass}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {claims.length === 0 ? (
-                    <tr><td colSpan={6} className="text-center py-12 text-gray-400 text-sm">No claims yet</td></tr>
-                  ) : claims.map((claim) => (
-                    <tr key={claim.id} className="hover:bg-gray-50">
-                      <td className={`${tdClass} font-medium`}>{claim.itemTitle}</td>
-                      <td className={tdClass}>
-                        <p>{claim.claimantName}</p>
-                        <p className="text-xs text-gray-400">{claim.claimantPhone}</p>
-                      </td>
-                      <td className={`${tdClass} max-w-xs`}>
-                        <p className="text-xs text-gray-500 line-clamp-2">{claim.proof}</p>
-                      </td>
-                      <td className={`${tdClass} text-gray-400 text-xs`}>{formatDate(claim.createdAt)}</td>
-                      <td className={tdClass}>
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${
-                          claim.status === "pending" ? "bg-yellow-100 text-yellow-700"
-                          : claim.status === "approved" ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-600"
-                        }`}>
-                          {claim.status}
-                        </span>
-                      </td>
-                      <td className={tdClass}>
-                        {claim.status === "pending" && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleClaim(claim, "approved")}
-                              disabled={processingId === claim.id}
-                              className="flex items-center gap-1 text-xs bg-green-50 text-green-700 border border-green-200 px-3 py-1.5 rounded-lg hover:bg-green-100 disabled:opacity-50"
-                            >
-                              {processingId === claim.id ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => handleClaim(claim, "rejected")}
-                              disabled={processingId === claim.id}
-                              className="flex items-center gap-1 text-xs bg-red-50 text-red-600 border border-red-100 px-3 py-1.5 rounded-lg hover:bg-red-100 disabled:opacity-50"
-                            >
-                              <XCircle size={12} /> Reject
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* ── Items ── */}
-          {tab === "items" && (
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-100">
-                  <tr>
-                    <th className={thClass}>Title</th>
-                    <th className={thClass}>Type</th>
-                    <th className={thClass}>Category</th>
-                    <th className={thClass}>Location</th>
-                    <th className={thClass}>Reporter</th>
-                    <th className={thClass}>Status</th>
-                    <th className={thClass}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {items.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50">
-                      <td className={`${tdClass} font-medium max-w-xs truncate`}>{item.title}</td>
-                      <td className={tdClass}>
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                          item.type === "lost" ? "bg-red-100 text-red-600" : "bg-emerald-100 text-emerald-600"
-                        }`}>
-                          {item.type.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className={`${tdClass} text-gray-500`}>{item.category}</td>
-                      <td className={`${tdClass} text-gray-500`}>{item.location}</td>
-                      <td className={`${tdClass} text-gray-500`}>{item.reporterName}</td>
-                      <td className={tdClass}>
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[item.status]}`}>
-                          {STATUS_LABELS[item.status]}
-                        </span>
-                      </td>
-                      <td className={tdClass}>
-                        <button
-                          onClick={() => handleDeleteItem(item)}
-                          disabled={processingId === item.id}
-                          className="flex items-center gap-1 text-xs text-red-600 hover:bg-red-50 px-2 py-1.5 rounded-lg disabled:opacity-50"
-                        >
-                          {processingId === item.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* ── Users ── */}
-          {tab === "users" && (
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-100">
-                  <tr>
-                    <th className={thClass}>Name</th>
-                    <th className={thClass}>Email</th>
-                    <th className={thClass}>Student ID</th>
-                    <th className={thClass}>Phone</th>
-                    <th className={thClass}>Role</th>
-                    <th className={thClass}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {users.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
-                      <td className={`${tdClass} font-medium`}>{user.name}</td>
-                      <td className={`${tdClass} text-gray-500`}>{user.email}</td>
-                      <td className={`${tdClass} text-gray-500`}>{user.studentId || "—"}</td>
-                      <td className={`${tdClass} text-gray-500`}>{user.phone || "—"}</td>
-                      <td className={tdClass}>
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                          user.role === "admin" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"
-                        }`}>
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className={tdClass}>
-                        <button
-                          onClick={() => toggleRole(user)}
-                          disabled={processingId === user.id}
-                          className="flex items-center gap-1 text-xs border border-gray-200 text-gray-600 hover:bg-gray-50 px-3 py-1.5 rounded-lg disabled:opacity-50"
-                        >
-                          {processingId === user.id ? (
-                            <Loader2 size={12} className="animate-spin" />
-                          ) : user.role === "admin" ? (
-                            <ShieldOff size={12} />
-                          ) : (
-                            <Shield size={12} />
+            <div className="bg-white/3 border border-white/8 rounded-2xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-white/3 border-b border-white/8">
+                    <tr><th className={th}>Item</th><th className={th}>Claimant</th><th className={th}>Proof</th><th className={th}>Date</th><th className={th}>Status</th><th className={th}>Actions</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {claims.length === 0 ? (
+                      <tr><td colSpan={6} className="text-center py-12 text-slate-500 text-sm">No claims yet</td></tr>
+                    ) : claims.map(claim => (
+                      <tr key={claim.id} className="hover:bg-white/3 transition-colors">
+                        <td className={`${td} font-medium text-white`}>{claim.itemTitle}</td>
+                        <td className={td}><p>{claim.claimantName}</p><p className="text-xs text-slate-500">{claim.claimantPhone}</p></td>
+                        <td className={td}><p className="text-xs text-slate-400 max-w-xs line-clamp-2">{claim.proof}</p></td>
+                        <td className={`${td} text-slate-500 text-xs`}>{formatDate(claim.createdAt)}</td>
+                        <td className={td}>
+                          <span className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize ${
+                            claim.status === "pending" ? "bg-yellow-500/10 text-yellow-400"
+                            : claim.status === "approved" ? "bg-emerald-500/10 text-emerald-400"
+                            : "bg-red-500/10 text-red-400"
+                          }`}>{claim.status}</span>
+                        </td>
+                        <td className={td}>
+                          {claim.status === "pending" && (
+                            <div className="flex gap-2">
+                              <button onClick={() => handleClaim(claim, "approved")} disabled={processingId === claim.id}
+                                className="flex items-center gap-1 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-lg hover:bg-emerald-500/20 disabled:opacity-50">
+                                {processingId === claim.id ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />} Approve
+                              </button>
+                              <button onClick={() => handleClaim(claim, "rejected")} disabled={processingId === claim.id}
+                                className="flex items-center gap-1 text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500/20 disabled:opacity-50">
+                                <XCircle size={12} /> Reject
+                              </button>
+                            </div>
                           )}
-                          {user.role === "admin" ? "Remove Admin" : "Make Admin"}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {tab === "items" && (
+            <div className="bg-white/3 border border-white/8 rounded-2xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-white/3 border-b border-white/8">
+                    <tr><th className={th}>Title</th><th className={th}>Type</th><th className={th}>Category</th><th className={th}>Location</th><th className={th}>Reporter</th><th className={th}>Status</th><th className={th}>Actions</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {items.map(item => (
+                      <tr key={item.id} className="hover:bg-white/3 transition-colors">
+                        <td className={`${td} font-medium text-white max-w-xs truncate`}>{item.title}</td>
+                        <td className={td}><span className={`text-xs font-black px-2 py-0.5 rounded-full ${item.type === "lost" ? "bg-red-500/20 text-red-400" : "bg-emerald-500/20 text-emerald-400"}`}>{item.type.toUpperCase()}</span></td>
+                        <td className={`${td} text-slate-400`}>{item.category}</td>
+                        <td className={`${td} text-slate-400`}>{item.location}</td>
+                        <td className={`${td} text-slate-400`}>{item.reporterName}</td>
+                        <td className={td}><span className={`text-xs font-medium px-2 py-0.5 rounded-full ${item.status === "open" ? "bg-emerald-500/10 text-emerald-400" : item.status === "claimed" ? "bg-yellow-500/10 text-yellow-400" : "bg-white/10 text-slate-400"}`}>{item.status}</span></td>
+                        <td className={td}>
+                          <button onClick={() => handleDeleteItem(item)} disabled={processingId === item.id}
+                            className="flex items-center gap-1 text-xs text-red-400 hover:bg-red-500/10 px-2 py-1.5 rounded-lg transition-colors disabled:opacity-50">
+                            {processingId === item.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />} Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {tab === "users" && (
+            <div className="bg-white/3 border border-white/8 rounded-2xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-white/3 border-b border-white/8">
+                    <tr><th className={th}>Name</th><th className={th}>Email</th><th className={th}>Student ID</th><th className={th}>Phone</th><th className={th}>Role</th><th className={th}>Actions</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {users.map(user => (
+                      <tr key={user.id} className="hover:bg-white/3 transition-colors">
+                        <td className={`${td} font-medium text-white`}>{user.name}</td>
+                        <td className={`${td} text-slate-400`}>{user.email}</td>
+                        <td className={`${td} text-slate-400`}>{user.studentId || "—"}</td>
+                        <td className={`${td} text-slate-400`}>{user.phone || "—"}</td>
+                        <td className={td}><span className={`text-xs font-bold px-2.5 py-1 rounded-full ${user.role === "admin" ? "bg-blue-500/20 text-blue-400" : "bg-white/10 text-slate-400"}`}>{user.role}</span></td>
+                        <td className={td}>
+                          <button onClick={() => toggleRole(user)} disabled={processingId === user.id}
+                            className="flex items-center gap-1 text-xs border border-white/10 text-slate-400 hover:bg-white/5 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
+                            {processingId === user.id ? <Loader2 size={12} className="animate-spin" /> : user.role === "admin" ? <ShieldOff size={12} /> : <Shield size={12} />}
+                            {user.role === "admin" ? "Remove Admin" : "Make Admin"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </>
@@ -308,5 +226,4 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
 export default AdminDashboard;

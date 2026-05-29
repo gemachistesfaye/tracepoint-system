@@ -18,38 +18,59 @@ import MyItems from "./pages/MyItems";
 import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 
+const PageWrapper = ({ children, noPad }) => (
+  <div className={noPad ? "" : "pt-16"}>{children}</div>
+);
+
 const App = () => (
   <BrowserRouter>
     <AuthProvider>
       <ItemsProvider>
-        <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
-        <div className="min-h-screen bg-gray-50">
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3500,
+            style: {
+              background: "#0f1629",
+              color: "#fff",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "12px",
+            },
+          }}
+        />
+        <div className="min-h-screen bg-[#0a0f1e]">
           <Navbar />
           <Routes>
-            {/* Public */}
-            <Route path="/" element={<Home />} />
+            {/* Home — no extra padding (full bleed hero) */}
+            <Route path="/" element={<PageWrapper noPad><Home /></PageWrapper>} />
+
+            {/* Auth pages — no navbar padding needed */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/items/lost" element={<ItemsList />} />
-            <Route path="/items/found" element={<ItemsList />} />
-            <Route path="/items/:id" element={<ItemDetail />} />
-            <Route path="/search" element={<Search />} />
+
+            {/* Public pages */}
+            <Route path="/items/lost" element={<PageWrapper><ItemsList /></PageWrapper>} />
+            <Route path="/items/found" element={<PageWrapper><ItemsList /></PageWrapper>} />
+            <Route path="/items/:id" element={<PageWrapper><ItemDetail /></PageWrapper>} />
+            <Route path="/search" element={<PageWrapper><Search /></PageWrapper>} />
 
             {/* Protected */}
-            <Route path="/report" element={<ProtectedRoute><ReportItem /></ProtectedRoute>} />
-            <Route path="/my-items" element={<ProtectedRoute><MyItems /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/report" element={<ProtectedRoute><PageWrapper><ReportItem /></PageWrapper></ProtectedRoute>} />
+            <Route path="/my-items" element={<ProtectedRoute><PageWrapper><MyItems /></PageWrapper></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><PageWrapper><Profile /></PageWrapper></ProtectedRoute>} />
 
             {/* Admin */}
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            <Route path="/admin" element={<AdminRoute><PageWrapper><AdminDashboard /></PageWrapper></AdminRoute>} />
 
             {/* 404 */}
             <Route path="*" element={
-              <div className="text-center py-24 text-gray-400">
-                <p className="text-5xl mb-4">404</p>
-                <p className="text-lg">Page not found</p>
-              </div>
+              <PageWrapper>
+                <div className="text-center py-32 text-slate-500">
+                  <p className="text-6xl font-black mb-4 text-white/10">404</p>
+                  <p className="text-lg">Page not found</p>
+                </div>
+              </PageWrapper>
             } />
           </Routes>
         </div>

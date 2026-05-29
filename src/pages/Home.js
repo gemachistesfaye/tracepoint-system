@@ -1,157 +1,263 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useItems } from "../context/ItemsContext";
 import ItemCard from "../components/items/ItemCard";
-import { Search, PlusCircle, CheckCircle, Bell, Shield, ArrowRight } from "lucide-react";
+import {
+  Search, PlusCircle, CheckCircle, ArrowRight,
+  MapPin, Shield, Zap, Clock, Users, TrendingUp,
+  ChevronRight, Star, Bell, Eye
+} from "lucide-react";
+
+const Counter = ({ target, suffix = "" }) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        let start = 0;
+        const step = Math.ceil(target / 60);
+        const timer = setInterval(() => {
+          start += step;
+          if (start >= target) { setCount(target); clearInterval(timer); }
+          else setCount(start);
+        }, 20);
+      }
+    }, { threshold: 0.5 });
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [target]);
+  return <span ref={ref}>{count}{suffix}</span>;
+};
 
 const Home = () => {
   const { currentUser } = useAuth();
   const { items, lostItems, foundItems, loading } = useItems();
-
+  const [activeTab, setActiveTab] = useState("recent");
+  const resolved = items.filter(i => i.status === "resolved");
   const recentItems = [...items].slice(0, 6);
-
-  const stats = [
-    { label: "Total Reports", value: items.length, color: "text-blue-600" },
-    { label: "Lost Items", value: lostItems.length, color: "text-red-500" },
-    { label: "Found Items", value: foundItems.length, color: "text-emerald-500" },
-    {
-      label: "Resolved",
-      value: items.filter((i) => i.status === "resolved").length,
-      color: "text-purple-500",
-    },
-  ];
+  const matchedItems = items.filter(i => i.status === "resolved").slice(0, 6);
+  const displayItems = activeTab === "recent" ? recentItems : matchedItems;
 
   return (
-    <div>
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <span className="inline-block bg-white/20 text-white text-sm font-medium px-4 py-1.5 rounded-full mb-4">
-            Haramaya University
-          </span>
-          <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-4">
-            Lost something on campus? <br />
-            <span className="text-blue-200">We'll help you find it.</span>
+    <div className="min-h-screen bg-[#0a0f1e] text-white">
+
+      {/* ── HERO ── */}
+      <section className="relative overflow-hidden">
+        {/* Background grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:64px_64px]" />
+        {/* Glow blobs */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-20 right-1/4 w-64 h-64 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
+          {/* Badge */}
+          <div className="flex justify-center mb-6">
+            <span className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold px-4 py-2 rounded-full backdrop-blur-sm">
+              <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
+              Haramaya University · Official Campus Platform
+            </span>
+          </div>
+
+          {/* Heading */}
+          <h1 className="text-center text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight mb-6">
+            <span className="text-white">Lost something</span>
+            <br />
+            <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              on campus?
+            </span>
           </h1>
-          <p className="text-lg text-blue-100 max-w-xl mx-auto mb-8">
-            TracePoint connects the Haramaya University community to report, search, and
-            recover lost items quickly and easily.
+          <p className="text-center text-lg text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+            TracePoint is Haramaya University's smart lost & found infrastructure —
+            connecting students, staff, and administrators in real time.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              to="/search"
-              className="inline-flex items-center gap-2 bg-white text-blue-700 font-semibold px-6 py-3 rounded-xl hover:bg-blue-50 transition-colors"
-            >
-              <Search size={18} /> Search Items
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <Link to="/search" className="group inline-flex items-center justify-center gap-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-2xl transition-all duration-200 shadow-lg shadow-blue-600/30 hover:shadow-blue-500/40 hover:-translate-y-0.5">
+              <Search size={18} />
+              Search Items
+              <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link
-              to={currentUser ? "/report" : "/register"}
-              className="inline-flex items-center gap-2 bg-blue-500 text-white font-semibold px-6 py-3 rounded-xl hover:bg-blue-400 transition-colors border border-blue-400"
-            >
-              <PlusCircle size={18} /> Report an Item
+            <Link to={currentUser ? "/report" : "/register"} className="group inline-flex items-center justify-center gap-2.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white font-bold px-8 py-4 rounded-2xl transition-all duration-200 backdrop-blur-sm hover:-translate-y-0.5">
+              <PlusCircle size={18} />
+              Report an Item
             </Link>
           </div>
-        </div>
-      </section>
 
-      {/* Stats */}
-      <section className="max-w-5xl mx-auto px-4 -mt-8">
-        <div className="bg-white rounded-2xl shadow-lg grid grid-cols-2 sm:grid-cols-4 divide-x divide-gray-100">
-          {stats.map((s) => (
-            <div key={s.label} className="p-5 text-center">
-              <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
-              <p className="text-sm text-gray-500 mt-1">{s.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="max-w-5xl mx-auto px-4 py-16">
-        <h2 className="text-2xl font-bold text-gray-900 text-center mb-10">How TracePoint Works</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {[
-            {
-              icon: <PlusCircle size={28} className="text-blue-600" />,
-              title: "Report",
-              desc: "Submit a lost or found item report with photo, location, and description.",
-            },
-            {
-              icon: <Search size={28} className="text-emerald-600" />,
-              title: "Search",
-              desc: "Browse items by category, location, or keyword to find your belongings.",
-            },
-            {
-              icon: <CheckCircle size={28} className="text-purple-600" />,
-              title: "Claim & Recover",
-              desc: "Submit a claim with proof of ownership and get reunited with your item.",
-            },
-          ].map((step) => (
-            <div
-              key={step.title}
-              className="bg-white border border-gray-100 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="inline-flex items-center justify-center w-14 h-14 bg-gray-50 rounded-xl mb-4">
-                {step.icon}
+          {/* Stats bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
+            {[
+              { label: "Items Reported", value: items.length, suffix: "+" },
+              { label: "Lost Items", value: lostItems.length, suffix: "" },
+              { label: "Found Items", value: foundItems.length, suffix: "" },
+              { label: "Resolved", value: resolved.length, suffix: "" },
+            ].map(s => (
+              <div key={s.label} className="bg-white/5 border border-white/8 rounded-2xl p-4 text-center backdrop-blur-sm">
+                <p className="text-2xl font-black text-white">
+                  <Counter target={s.value} suffix={s.suffix} />
+                </p>
+                <p className="text-xs text-slate-400 mt-1 font-medium">{s.label}</p>
               </div>
-              <h3 className="font-semibold text-gray-900 text-lg mb-2">{step.title}</h3>
-              <p className="text-sm text-gray-500">{step.desc}</p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section className="py-24 px-4 border-t border-white/5">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-blue-400 text-sm font-bold uppercase tracking-widest mb-3">Process</p>
+            <h2 className="text-3xl sm:text-4xl font-black text-white">How TracePoint Works</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+            {/* Connector line */}
+            <div className="hidden md:block absolute top-10 left-1/3 right-1/3 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+            {[
+              { step: "01", icon: <PlusCircle size={24} />, title: "Report", desc: "Submit a lost or found item with photo, location, category, and description in under 2 minutes.", color: "blue" },
+              { step: "02", icon: <Zap size={24} />, title: "Smart Match", desc: "Our matching engine compares reports and suggests possible item matches automatically.", color: "cyan" },
+              { step: "03", icon: <CheckCircle size={24} />, title: "Claim & Recover", desc: "Submit proof of ownership, get admin verification, and be reunited with your item.", color: "emerald" },
+            ].map(({ step, icon, title, desc, color }) => (
+              <div key={step} className="relative bg-white/3 border border-white/8 rounded-3xl p-8 hover:border-blue-500/30 hover:bg-white/5 transition-all duration-300 group">
+                <div className={`inline-flex p-3 rounded-2xl mb-5 ${color === "blue" ? "bg-blue-500/15 text-blue-400" : color === "cyan" ? "bg-cyan-500/15 text-cyan-400" : "bg-emerald-500/15 text-emerald-400"}`}>
+                  {icon}
+                </div>
+                <div className="absolute top-6 right-6 text-5xl font-black text-white/4 group-hover:text-white/6 transition-colors select-none">{step}</div>
+                <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURES GRID ── */}
+      <section className="py-20 px-4 bg-gradient-to-b from-transparent to-blue-950/10">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-blue-400 text-sm font-bold uppercase tracking-widest mb-3">Platform Features</p>
+            <h2 className="text-3xl sm:text-4xl font-black text-white">Built for the Entire Campus</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { icon: <Zap size={20} />, title: "AI-Powered Matching", desc: "Automatically compares lost and found reports to surface possible matches.", tag: "Smart", color: "blue" },
+              { icon: <Bell size={20} />, title: "Real-time Notifications", desc: "Instant alerts when someone claims your item or a match is found.", tag: "Live", color: "cyan" },
+              { icon: <Shield size={20} />, title: "Admin Verification", desc: "University authority reviews all claims before approval for security.", tag: "Secure", color: "emerald" },
+              { icon: <MapPin size={20} />, title: "Campus Locations", desc: "Tag items to specific campus buildings and landmarks for easy recovery.", tag: "Precise", color: "orange" },
+              { icon: <TrendingUp size={20} />, title: "Analytics Dashboard", desc: "Admins get full insights — recovery rates, hot zones, category trends.", tag: "Insights", color: "purple" },
+              { icon: <Eye size={20} />, title: "Activity Timeline", desc: "Every item has a full history log from report to resolution.", tag: "Transparent", color: "pink" },
+            ].map(({ icon, title, desc, tag, color }) => {
+              const colors = {
+                blue: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+                cyan: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+                emerald: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                orange: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+                purple: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+                pink: "bg-pink-500/10 text-pink-400 border-pink-500/20",
+              };
+              return (
+                <div key={title} className="bg-white/3 border border-white/8 rounded-2xl p-6 hover:border-white/15 hover:bg-white/5 transition-all duration-200">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`p-2.5 rounded-xl ${colors[color]}`}>{icon}</div>
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${colors[color]}`}>{tag}</span>
+                  </div>
+                  <h3 className="font-bold text-white mb-2">{title}</h3>
+                  <p className="text-sm text-slate-400 leading-relaxed">{desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── RECENT ITEMS ── */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div>
+              <p className="text-blue-400 text-sm font-bold uppercase tracking-widest mb-1">Live Feed</p>
+              <h2 className="text-2xl font-black text-white">Campus Reports</h2>
             </div>
-          ))}
+            <div className="flex items-center gap-2">
+              {["recent", "resolved"].map(tab => (
+                <button key={tab} onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === tab ? "bg-blue-600 text-white" : "bg-white/5 text-slate-400 hover:bg-white/10"}`}>
+                  {tab === "recent" ? "Recent" : "Resolved"}
+                </button>
+              ))}
+              <Link to="/search" className="flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 font-medium ml-2">
+                View all <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, i) => <div key={i} className="bg-white/5 rounded-2xl h-64 animate-pulse" />)}
+            </div>
+          ) : displayItems.length === 0 ? (
+            <div className="text-center py-20 text-slate-500">
+              <Search size={40} className="mx-auto mb-3 opacity-30" />
+              <p>No items yet — be the first to report!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {displayItems.map(item => <ItemCard key={item.id} item={item} dark />)}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Recent Items */}
-      <section className="max-w-5xl mx-auto px-4 pb-16">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Recent Reports</h2>
-          <Link
-            to="/search"
-            className="text-sm text-blue-600 font-medium flex items-center gap-1 hover:underline"
-          >
-            View all <ArrowRight size={14} />
-          </Link>
+      {/* ── TESTIMONIAL / SUCCESS BANNER ── */}
+      <section className="py-20 px-4 border-t border-white/5">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/10 border border-blue-500/20 rounded-3xl p-10 text-center backdrop-blur-sm">
+            <div className="flex justify-center gap-1 mb-4">
+              {[...Array(5)].map((_, i) => <Star key={i} size={16} className="text-yellow-400 fill-yellow-400" />)}
+            </div>
+            <blockquote className="text-xl font-semibold text-white mb-4 leading-relaxed">
+              "I lost my student ID before final exams. TracePoint matched it with a found report within hours —
+              I had it back before my first exam. Incredible."
+            </blockquote>
+            <p className="text-slate-400 text-sm">— 3rd Year Computer Science Student, Haramaya University</p>
+          </div>
         </div>
-
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-gray-100 rounded-2xl h-64 animate-pulse" />
-            ))}
-          </div>
-        ) : recentItems.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">
-            <Search size={40} className="mx-auto mb-3 opacity-30" />
-            <p>No items reported yet. Be the first!</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recentItems.map((item) => (
-              <ItemCard key={item.id} item={item} />
-            ))}
-          </div>
-        )}
       </section>
 
-      {/* CTA Banner */}
+      {/* ── CTA ── */}
       {!currentUser && (
-        <section className="bg-blue-600 text-white py-12 px-4">
+        <section className="py-24 px-4 border-t border-white/5">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-2xl font-bold mb-3">Join the TracePoint Community</h2>
-            <p className="text-blue-100 mb-6">
-              Register with your Haramaya University account to report items, receive
-              notifications, and help others recover their belongings.
+            <h2 className="text-4xl font-black text-white mb-4">Join 
+              <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent"> TracePoint</span>
+            </h2>
+            <p className="text-slate-400 mb-8 text-lg">
+              Register with your Haramaya University credentials and start protecting your belongings today.
             </p>
-            <Link
-              to="/register"
-              className="inline-flex items-center gap-2 bg-white text-blue-700 font-semibold px-8 py-3 rounded-xl hover:bg-blue-50 transition-colors"
-            >
-              Get Started <ArrowRight size={18} />
+            <Link to="/register" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-10 py-4 rounded-2xl transition-all hover:-translate-y-0.5 shadow-lg shadow-blue-600/30">
+              Get Started Free <ArrowRight size={18} />
             </Link>
           </div>
         </section>
       )}
+
+      {/* ── FOOTER ── */}
+      <footer className="border-t border-white/5 py-10 px-4">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="bg-blue-600 text-white rounded-lg p-1.5"><MapPin size={16} /></div>
+            <span className="font-bold text-white">TracePoint</span>
+            <span className="text-slate-500 text-sm">· Haramaya University</span>
+          </div>
+          <p className="text-slate-500 text-sm">© 2025 TracePoint. Built for Haramaya University.</p>
+          <div className="flex gap-6">
+            <Link to="/items/lost" className="text-slate-500 hover:text-white text-sm transition-colors">Lost Items</Link>
+            <Link to="/items/found" className="text-slate-500 hover:text-white text-sm transition-colors">Found Items</Link>
+            <Link to="/search" className="text-slate-500 hover:text-white text-sm transition-colors">Search</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

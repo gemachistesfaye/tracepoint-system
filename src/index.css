@@ -1,4 +1,21 @@
 @import "tailwindcss";
 
+* { box-sizing: border-box; }
+
+body {
+  background-color: #0a0f1e;
+  color: white;
+  -webkit-font-smoothing: antialiased;
+}
+
 .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0f1e; }
+::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2563eb; }
+
+/* Page padding for fixed navbar */
+.page-content { padding-top: 4rem; }
