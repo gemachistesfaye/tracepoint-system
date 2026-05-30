@@ -1,12 +1,13 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ItemsProvider } from "./context/ItemsContext";
 import { ProtectedRoute, AdminRoute } from "./components/common/ProtectedRoute";
 import Navbar from "./components/common/Navbar";
 
-import Home from "./pages/Home";
+import LandingPage from "./pages/LandingPage";
+import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -17,9 +18,21 @@ import Search from "./pages/Search";
 import MyItems from "./pages/MyItems";
 import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
+import Analytics from "./pages/Analytics";
 
-const PageWrapper = ({ children, noPad }) => (
-  <div className={noPad ? "" : "pt-16"}>{children}</div>
+// Smart root: guests see landing, logged-in see dashboard
+const RootRoute = () => {
+  const { currentUser, loading } = useAuth();
+  if (loading) return null;
+  return currentUser ? <Navigate to="/home" replace /> : <LandingPage />;
+};
+
+// Pages that use the app navbar
+const AppLayout = ({ children }) => (
+  <div className="min-h-screen bg-[#0a0f1e]">
+    <Navbar />
+    <div className="pt-16">{children}</div>
+  </div>
 );
 
 const App = () => (
@@ -38,42 +51,37 @@ const App = () => (
             },
           }}
         />
-        <div className="min-h-screen bg-[#0a0f1e]">
-          <Navbar />
-          <Routes>
-            {/* Home — no extra padding (full bleed hero) */}
-            <Route path="/" element={<PageWrapper noPad><Home /></PageWrapper>} />
+        <Routes>
+          {/* Public landing — no navbar (has its own) */}
+          <Route path="/" element={<RootRoute />} />
 
-            {/* Auth pages — no navbar padding needed */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
+          {/* Auth pages — no navbar */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-            {/* Public pages */}
-            <Route path="/items/lost" element={<PageWrapper><ItemsList /></PageWrapper>} />
-            <Route path="/items/found" element={<PageWrapper><ItemsList /></PageWrapper>} />
-            <Route path="/items/:id" element={<PageWrapper><ItemDetail /></PageWrapper>} />
-            <Route path="/search" element={<PageWrapper><Search /></PageWrapper>} />
+          {/* App pages — use AppLayout with Navbar */}
+          <Route path="/home" element={<AppLayout><ProtectedRoute><Dashboard /></ProtectedRoute></AppLayout>} />
+          <Route path="/items/lost" element={<AppLayout><ItemsList /></AppLayout>} />
+          <Route path="/items/found" element={<AppLayout><ItemsList /></AppLayout>} />
+          <Route path="/items/:id" element={<AppLayout><ItemDetail /></AppLayout>} />
+          <Route path="/search" element={<AppLayout><Search /></AppLayout>} />
+          <Route path="/report" element={<AppLayout><ProtectedRoute><ReportItem /></ProtectedRoute></AppLayout>} />
+          <Route path="/my-items" element={<AppLayout><ProtectedRoute><MyItems /></ProtectedRoute></AppLayout>} />
+          <Route path="/profile" element={<AppLayout><ProtectedRoute><Profile /></ProtectedRoute></AppLayout>} />
+          <Route path="/analytics" element={<AppLayout><ProtectedRoute><Analytics /></ProtectedRoute></AppLayout>} />
+          <Route path="/admin" element={<AppLayout><AdminRoute><AdminDashboard /></AdminRoute></AppLayout>} />
 
-            {/* Protected */}
-            <Route path="/report" element={<ProtectedRoute><PageWrapper><ReportItem /></PageWrapper></ProtectedRoute>} />
-            <Route path="/my-items" element={<ProtectedRoute><PageWrapper><MyItems /></PageWrapper></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><PageWrapper><Profile /></PageWrapper></ProtectedRoute>} />
-
-            {/* Admin */}
-            <Route path="/admin" element={<AdminRoute><PageWrapper><AdminDashboard /></PageWrapper></AdminRoute>} />
-
-            {/* 404 */}
-            <Route path="*" element={
-              <PageWrapper>
-                <div className="text-center py-32 text-slate-500">
-                  <p className="text-6xl font-black mb-4 text-white/10">404</p>
-                  <p className="text-lg">Page not found</p>
-                </div>
-              </PageWrapper>
-            } />
-          </Routes>
-        </div>
+          {/* 404 */}
+          <Route path="*" element={
+            <AppLayout>
+              <div className="text-center py-32 text-slate-500">
+                <p className="text-6xl font-black mb-4 text-white/10">404</p>
+                <p className="text-lg text-slate-400">Page not found</p>
+              </div>
+            </AppLayout>
+          } />
+        </Routes>
       </ItemsProvider>
     </AuthProvider>
   </BrowserRouter>
