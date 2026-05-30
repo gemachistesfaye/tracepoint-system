@@ -20,14 +20,15 @@ import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 import Analytics from "./pages/Analytics";
 
-// Smart root: guests see landing, logged-in see dashboard
+// Root: guests → landing, admins → /admin, users → /home
 const RootRoute = () => {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, userProfile, loading } = useAuth();
   if (loading) return null;
-  return currentUser ? <Navigate to="/home" replace /> : <LandingPage />;
+  if (!currentUser) return <LandingPage />;
+  if (userProfile?.role === "admin") return <Navigate to="/admin" replace />;
+  return <Navigate to="/home" replace />;
 };
 
-// Pages that use the app navbar
 const AppLayout = ({ children }) => (
   <div className="min-h-screen bg-[#0a0f1e]">
     <Navbar />
@@ -39,28 +40,20 @@ const App = () => (
   <BrowserRouter>
     <AuthProvider>
       <ItemsProvider>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 3500,
-            style: {
-              background: "#0f1629",
-              color: "#fff",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "12px",
-            },
-          }}
-        />
+        <Toaster position="top-right" toastOptions={{
+          duration: 3500,
+          style: { background: "#0f1629", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" },
+        }} />
         <Routes>
-          {/* Public landing — no navbar (has its own) */}
+          {/* Smart root */}
           <Route path="/" element={<RootRoute />} />
 
-          {/* Auth pages — no navbar */}
+          {/* Auth — no navbar */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* App pages — use AppLayout with Navbar */}
+          {/* User pages */}
           <Route path="/home" element={<AppLayout><ProtectedRoute><Dashboard /></ProtectedRoute></AppLayout>} />
           <Route path="/items/lost" element={<AppLayout><ItemsList /></AppLayout>} />
           <Route path="/items/found" element={<AppLayout><ItemsList /></AppLayout>} />
@@ -70,17 +63,14 @@ const App = () => (
           <Route path="/my-items" element={<AppLayout><ProtectedRoute><MyItems /></ProtectedRoute></AppLayout>} />
           <Route path="/profile" element={<AppLayout><ProtectedRoute><Profile /></ProtectedRoute></AppLayout>} />
           <Route path="/analytics" element={<AppLayout><ProtectedRoute><Analytics /></ProtectedRoute></AppLayout>} />
-          <Route path="/admin" element={<AppLayout><AdminRoute><AdminDashboard /></AdminRoute></AppLayout>} />
 
-          {/* 404 */}
-          <Route path="*" element={
-            <AppLayout>
-              <div className="text-center py-32 text-slate-500">
-                <p className="text-6xl font-black mb-4 text-white/10">404</p>
-                <p className="text-lg text-slate-400">Page not found</p>
-              </div>
-            </AppLayout>
-          } />
+          {/* Admin only */}
+          <Route path="/admin" element={<AppLayout><AdminRoute><AdminDashboard /></AdminRoute></AppLayout>} />
+          <Route path="/admin/items" element={<AppLayout><AdminRoute><AdminDashboard tab="items" /></AdminRoute></AppLayout>} />
+          <Route path="/admin/claims" element={<AppLayout><AdminRoute><AdminDashboard tab="claims" /></AdminRoute></AppLayout>} />
+          <Route path="/admin/users" element={<AppLayout><AdminRoute><AdminDashboard tab="users" /></AdminRoute></AppLayout>} />
+
+          <Route path="*" element={<AppLayout><div className="text-center py-32"><p className="text-6xl font-black text-white/10 mb-4">404</p><p className="text-slate-400">Page not found</p></div></AppLayout>} />
         </Routes>
       </ItemsProvider>
     </AuthProvider>

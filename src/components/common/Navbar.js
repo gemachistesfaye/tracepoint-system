@@ -5,7 +5,8 @@ import NotificationBell from "./NotificationBell";
 import {
   MapPin, Menu, X, LogOut, User, Shield,
   PlusCircle, Search, ChevronDown, BarChart3,
-  Package, Home, TrendingUp,
+  Package, Home, TrendingUp, Users, FileText,
+  Settings, Bell,
 } from "lucide-react";
 
 const Navbar = () => {
@@ -24,37 +25,53 @@ const Navbar = () => {
 
   useEffect(() => { setMenuOpen(false); setUserMenuOpen(false); }, [location.pathname]);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
+  const handleLogout = async () => { await logout(); navigate("/"); };
+  const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + "/");
 
-  const isActive = (path) => location.pathname === path;
+  // ADMIN nav links
+  const adminLinks = [
+    { to: "/admin", label: "Overview", icon: <BarChart3 size={14} />, exact: true },
+    { to: "/admin/claims", label: "Claims", icon: <FileText size={14} /> },
+    { to: "/admin/items", label: "All Items", icon: <Package size={14} /> },
+    { to: "/admin/users", label: "Users", icon: <Users size={14} /> },
+    { to: "/analytics", label: "Analytics", icon: <TrendingUp size={14} /> },
+  ];
 
-  const navLinks = [
+  // USER nav links
+  const userLinks = [
     { to: "/home", label: "Dashboard", icon: <Home size={14} /> },
     { to: "/items/lost", label: "Lost Items", icon: <Search size={14} /> },
     { to: "/items/found", label: "Found Items", icon: <Package size={14} /> },
     { to: "/search", label: "Search", icon: <Search size={14} /> },
-    { to: "/analytics", label: "Analytics", icon: <TrendingUp size={14} /> },
   ];
+
+  const navLinks = isAdmin ? adminLinks : userLinks;
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       scrolled
-        ? "bg-[#0a0f1e]/95 backdrop-blur-xl border-b border-white/8 shadow-xl shadow-black/20"
+        ? "bg-[#0a0f1e]/98 backdrop-blur-xl border-b border-white/8 shadow-xl"
         : "bg-[#0a0f1e]/80 backdrop-blur-sm border-b border-white/5"
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
-          <Link to={currentUser ? "/home" : "/"} className="flex items-center gap-2.5 group">
-            <div className="bg-blue-600 group-hover:bg-blue-500 text-white rounded-xl p-1.5 transition-colors shadow-lg shadow-blue-600/20">
+          <Link to={isAdmin ? "/admin" : currentUser ? "/home" : "/"} className="flex items-center gap-2.5 group">
+            <div className={`text-white rounded-xl p-1.5 transition-colors shadow-lg ${
+              isAdmin ? "bg-purple-600 group-hover:bg-purple-500 shadow-purple-600/20" : "bg-blue-600 group-hover:bg-blue-500 shadow-blue-600/20"
+            }`}>
               <MapPin size={18} />
             </div>
             <div>
-              <span className="font-black text-white text-lg tracking-tight">TracePoint</span>
+              <div className="flex items-center gap-2">
+                <span className="font-black text-white text-lg tracking-tight">TracePoint</span>
+                {isAdmin && (
+                  <span className="text-xs font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full">
+                    Admin
+                  </span>
+                )}
+              </div>
               <span className="hidden sm:block text-[10px] text-slate-500 leading-none font-medium tracking-widest uppercase">
                 Haramaya University
               </span>
@@ -63,34 +80,47 @@ const Navbar = () => {
 
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-0.5">
-            {navLinks.map((link) => (
-              <Link key={link.to} to={link.to}
-                className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${
-                  isActive(link.to)
-                    ? "bg-blue-600/20 text-blue-400"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
-                }`}>
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const active = link.exact ? location.pathname === link.to : isActive(link.to);
+              return (
+                <Link key={link.to} to={link.to}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${
+                    active
+                      ? isAdmin ? "bg-purple-600/20 text-purple-400" : "bg-blue-600/20 text-blue-400"
+                      : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }`}>
+                  {link.icon} {link.label}
+                </Link>
+              );
+            })}
           </div>
 
-          {/* Right Side */}
+          {/* Right side */}
           <div className="flex items-center gap-2.5">
             {currentUser ? (
               <>
                 <NotificationBell />
 
-                <Link to="/report"
-                  className="hidden sm:inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-blue-600/20">
-                  <PlusCircle size={15} /> Report
-                </Link>
+                {/* Admin: quick action bar */}
+                {isAdmin ? (
+                  <Link to="/admin/claims"
+                    className="hidden sm:inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-purple-600/20">
+                    <FileText size={15} /> Review Claims
+                  </Link>
+                ) : (
+                  <Link to="/report"
+                    className="hidden sm:inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-blue-600/20">
+                    <PlusCircle size={15} /> Report
+                  </Link>
+                )}
 
                 {/* User dropdown */}
                 <div className="relative">
                   <button onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/8 px-3 py-2 rounded-xl transition-colors">
-                    <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-xs shadow-sm">
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-xs shadow-sm ${
+                      isAdmin ? "bg-gradient-to-br from-purple-500 to-indigo-600" : "bg-gradient-to-br from-blue-500 to-indigo-600"
+                    }`}>
                       {userProfile?.name?.[0]?.toUpperCase() || "U"}
                     </div>
                     <span className="hidden sm:block text-sm font-medium text-white max-w-[90px] truncate">
@@ -102,31 +132,59 @@ const Navbar = () => {
                   {userMenuOpen && (
                     <>
                       <div className="fixed inset-0 z-30" onClick={() => setUserMenuOpen(false)} />
-                      <div className="absolute right-0 mt-2 w-56 bg-[#0f1629] border border-white/10 rounded-2xl shadow-2xl z-40 overflow-hidden">
-                        <div className="p-3 border-b border-white/8">
-                          <p className="font-semibold text-sm text-white truncate">{userProfile?.name}</p>
-                          <p className="text-xs text-slate-400 truncate mt-0.5">{userProfile?.email}</p>
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full mt-1.5 inline-block ${
-                            isAdmin ? "bg-blue-500/20 text-blue-400" : "bg-white/8 text-slate-400"
-                          }`}>{isAdmin ? "⚡ Admin" : "Student"}</span>
+                      <div className="absolute right-0 mt-2 w-60 bg-[#0f1629] border border-white/10 rounded-2xl shadow-2xl z-40 overflow-hidden">
+                        {/* Profile header */}
+                        <div className={`p-4 border-b border-white/8 ${isAdmin ? "bg-purple-600/10" : "bg-blue-600/5"}`}>
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm ${
+                              isAdmin ? "bg-gradient-to-br from-purple-500 to-indigo-600" : "bg-gradient-to-br from-blue-500 to-indigo-600"
+                            }`}>
+                              {userProfile?.name?.[0]?.toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-bold text-sm text-white">{userProfile?.name}</p>
+                              <p className="text-xs text-slate-400 truncate max-w-[140px]">{userProfile?.email}</p>
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full mt-1 inline-block ${
+                                isAdmin ? "bg-purple-500/20 text-purple-400" : "bg-blue-500/20 text-blue-400"
+                              }`}>{isAdmin ? "⚡ Admin" : "Student"}</span>
+                            </div>
+                          </div>
                         </div>
+
+                        {/* Menu items */}
                         <div className="p-1.5 space-y-0.5">
-                          {[
-                            { to: "/home", icon: <Home size={14} />, label: "Dashboard" },
-                            { to: "/profile", icon: <User size={14} />, label: "My Profile" },
-                            { to: "/my-items", icon: <Package size={14} />, label: "My Items & Claims" },
-                            { to: "/analytics", icon: <BarChart3 size={14} />, label: "Analytics" },
-                            ...(isAdmin ? [{ to: "/admin", icon: <Shield size={14} />, label: "Admin Panel", admin: true }] : []),
-                          ].map(item => (
-                            <Link key={item.to} to={item.to} onClick={() => setUserMenuOpen(false)}
-                              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-colors ${
-                                item.admin
-                                  ? "text-blue-400 hover:bg-blue-500/10"
-                                  : "text-slate-300 hover:bg-white/5 hover:text-white"
-                              }`}>
-                              {item.icon} {item.label}
-                            </Link>
-                          ))}
+                          {isAdmin ? (
+                            // Admin menu
+                            <>
+                              {adminLinks.map(item => (
+                                <Link key={item.to} to={item.to} onClick={() => setUserMenuOpen(false)}
+                                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                  <span className="text-purple-400">{item.icon}</span> {item.label}
+                                </Link>
+                              ))}
+                              <div className="border-t border-white/5 pt-1 mt-1">
+                                <Link to="/profile" onClick={() => setUserMenuOpen(false)}
+                                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                  <Settings size={14} className="text-slate-400" /> Account Settings
+                                </Link>
+                              </div>
+                            </>
+                          ) : (
+                            // User menu
+                            <>
+                              {[
+                                { to: "/home", icon: <Home size={14} />, label: "Dashboard" },
+                                { to: "/profile", icon: <User size={14} />, label: "My Profile" },
+                                { to: "/my-items", icon: <Package size={14} />, label: "My Items & Claims" },
+                                { to: "/analytics", icon: <TrendingUp size={14} />, label: "Analytics" },
+                              ].map(item => (
+                                <Link key={item.to} to={item.to} onClick={() => setUserMenuOpen(false)}
+                                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                  <span className="text-slate-400">{item.icon}</span> {item.label}
+                                </Link>
+                              ))}
+                            </>
+                          )}
                           <div className="border-t border-white/5 pt-1 mt-1">
                             <button onClick={handleLogout}
                               className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition-colors">
@@ -141,16 +199,11 @@ const Navbar = () => {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <Link to="/login" className="text-sm font-medium text-slate-400 hover:text-white px-4 py-2 rounded-xl hover:bg-white/5 transition-all hidden sm:block">
-                  Sign In
-                </Link>
-                <Link to="/register" className="text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-blue-600/20">
-                  Get Started
-                </Link>
+                <Link to="/login" className="text-sm font-medium text-slate-400 hover:text-white px-4 py-2 rounded-xl hover:bg-white/5 transition-all hidden sm:block">Sign In</Link>
+                <Link to="/register" className="text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-blue-600/20">Get Started</Link>
               </div>
             )}
 
-            {/* Mobile toggle */}
             <button className="lg:hidden p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
               onClick={() => setMenuOpen(!menuOpen)}>
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -162,28 +215,33 @@ const Navbar = () => {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="lg:hidden bg-[#0a0f1e]/98 backdrop-blur-xl border-t border-white/8 px-4 py-3 space-y-1">
-          {navLinks.map(link => (
-            <Link key={link.to} to={link.to}
-              className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                isActive(link.to) ? "bg-blue-600/20 text-blue-400" : "text-slate-400 hover:text-white hover:bg-white/5"
-              }`}>
-              {link.icon} {link.label}
-            </Link>
-          ))}
-          {currentUser ? (
-            <>
+          {navLinks.map(link => {
+            const active = link.exact ? location.pathname === link.to : isActive(link.to);
+            return (
+              <Link key={link.to} to={link.to}
+                className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                  active
+                    ? isAdmin ? "bg-purple-600/20 text-purple-400" : "bg-blue-600/20 text-blue-400"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                }`}>
+                {link.icon} {link.label}
+              </Link>
+            );
+          })}
+          <div className="border-t border-white/8 pt-2 mt-2">
+            {isAdmin ? (
+              <Link to="/admin/claims" className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-purple-400 hover:bg-purple-500/10 transition-colors">
+                <FileText size={16} /> Review Claims
+              </Link>
+            ) : (
               <Link to="/report" className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-blue-400 hover:bg-blue-500/10 transition-colors">
                 <PlusCircle size={16} /> Report Item
               </Link>
-              <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition-colors">
-                <LogOut size={16} /> Sign Out
-              </button>
-            </>
-          ) : (
-            <Link to="/register" className="flex items-center justify-center py-3 bg-blue-600 text-white font-bold rounded-xl text-sm">
-              Get Started
-            </Link>
-          )}
+            )}
+            <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition-colors mt-1">
+              <LogOut size={16} /> Sign Out
+            </button>
+          </div>
         </div>
       )}
     </nav>
