@@ -16,9 +16,9 @@ const Register = () => {
     try {
       await registerUser(data);
       toast.success("Account created! Welcome to TracePoint.");
-      navigate("/");
+      navigate("/home");
     } catch (err) {
-      if (err.code === "auth/email-already-in-use") toast.error("Email already in use.");
+      if (err.code === "auth/email-already-in-use") toast.error("Email already in use. Please sign in.");
       else toast.error("Registration failed. Please try again.");
     }
   };
@@ -28,16 +28,20 @@ const Register = () => {
   const errorClass = "text-xs text-red-400 mt-1";
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0a0f1e] px-4 py-6">
       <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:64px_64px]" />
-      <div className="absolute top-1/4 right-1/3 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl" />
+      <div className="absolute top-1/4 right-1/3 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative w-full max-w-md">
-        {/* Back to website */}
-        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white mb-6 transition-colors group">
-          <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition-transform" />
+      {/* Back to website — always visible top-left */}
+      <div className="relative max-w-md mx-auto">
+        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white mb-8 transition-colors group">
+          <ArrowLeft size={15} className="group-hover:-translate-x-1 transition-transform" />
           Back to website
         </Link>
+      </div>
+
+      {/* Card */}
+      <div className="relative w-full max-w-md mx-auto pb-8">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 text-white rounded-2xl mb-4 shadow-lg shadow-blue-600/30">
             <MapPin size={26} />
@@ -78,7 +82,7 @@ const Register = () => {
                   className={`${inputClass} pr-11`}
                   {...register("password", { required: "Password is required", minLength: { value: 6, message: "Min. 6 characters" } })} />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
@@ -100,11 +104,14 @@ const Register = () => {
           </form>
           <p className="text-center text-sm text-slate-500 mt-6">
             Already have an account?{" "}
-            <Link to="/login" className="text-blue-400 font-semibold hover:text-blue-300">Sign in</Link>
+            <Link to="/login" className="text-blue-400 font-semibold hover:text-blue-300 transition-colors">
+              Sign in
+            </Link>
           </p>
         </div>
       </div>
     </div>
   );
 };
+
 export default Register;
