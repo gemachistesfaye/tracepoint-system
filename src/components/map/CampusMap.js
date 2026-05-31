@@ -67,11 +67,6 @@ const CampusMap = ({
       { attribution: "© Esri", maxZoom: 20 }
     );
 
-    const satelliteLabels = L.tileLayer(
-      "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
-      { maxZoom: 20 }
-    );
-
     lightLayer.addTo(map);
     L.control.layers(
       { "🗺️ Map": lightLayer, "🛰️ Satellite": satelliteLayer },

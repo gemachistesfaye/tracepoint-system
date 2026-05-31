@@ -5,7 +5,7 @@ import NotificationBell from "./NotificationBell";
 import InstallButton from "./InstallButton";
 import LogoutDialog from "./LogoutDialog";
 import {
-  MapPin, Menu, X, User, Shield,
+  MapPin, Menu, X, User,
   PlusCircle, Search, ChevronDown, BarChart3,
   Package, Home, TrendingUp, Users, FileText, Settings, LogOut,
 } from "lucide-react";

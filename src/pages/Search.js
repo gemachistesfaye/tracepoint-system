@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useItems } from "../context/ItemsContext";
 import ItemCard from "../components/items/ItemCard";
 import { CATEGORIES, LOCATIONS, searchItems } from "../utils/helpers";
-import { Search as SearchIcon, X, SlidersHorizontal } from "lucide-react";
+import { Search as SearchIcon, X } from "lucide-react";
 
 const Search = () => {
   const { items, loading } = useItems();

@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { getItem, deleteItem, updateItem, addNotification, getAllItems } from "../firebase/firestore";
 import { deleteImage } from "../firebase/storage";
 import ClaimModal from "../components/claims/ClaimModal";
-import { formatDate, timeAgo, STATUS_LABELS } from "../utils/helpers";
+import { timeAgo, STATUS_LABELS } from "../utils/helpers";
 import { findMatches, matchLabel, findDuplicates } from "../utils/matching";
 import toast from "react-hot-toast";
 import {
@@ -25,13 +25,12 @@ const ItemDetail = () => {
   const [resolving, setResolving] = useState(false);
   const [aiMatches, setAiMatches] = useState([]);
   const [duplicates, setDuplicates] = useState([]);
-  const [allItems, setAllItems] = useState([]);
+  
 
   useEffect(() => {
     const load = async () => {
       const [data, items] = await Promise.all([getItem(id), getAllItems()]);
       setItem(data);
-      setAllItems(items);
       if (data) {
         setAiMatches(findMatches(data, items, 25, 3));
         setDuplicates(findDuplicates(data, items, 60));

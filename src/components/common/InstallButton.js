@@ -24,13 +24,21 @@ const InstallButton = () => {
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
   const handleClick = async () => {
     if (deferredPrompt) {
+      // Native Chrome/Android install prompt available
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === "accepted") setVisible(false);
       setDeferredPrompt(null);
+    } else if (isMobile) {
+      // Mobile without native prompt — show instructions
+      setShowModal(true);
     } else {
+      // Desktop — Chrome will show native prompt after SW is active
+      // Show a small tooltip instead of full modal
       setShowModal(true);
     }
   };
@@ -75,20 +83,32 @@ const InstallButton = () => {
 
             {/* Instructions */}
             <div className="space-y-3 mb-5">
-              <div className="flex items-start gap-3 bg-white/5 border border-white/8 rounded-2xl p-3.5">
-                <div className="w-8 h-8 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center shrink-0 text-sm font-black">1</div>
-                <div>
-                  <p className="text-sm font-bold text-white">Chrome / Android</p>
-                  <p className="text-xs text-slate-400 mt-0.5">Tap menu <span className="text-blue-400 font-bold">⋮</span> → <span className="text-blue-400">"Add to Home Screen"</span></p>
+              {isMobile ? (
+                <>
+                  <div className="flex items-start gap-3 bg-white/5 border border-white/8 rounded-2xl p-3.5">
+                    <div className="w-8 h-8 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center shrink-0 text-sm font-black">1</div>
+                    <div>
+                      <p className="text-sm font-bold text-white">Chrome / Android</p>
+                      <p className="text-xs text-slate-400 mt-0.5">Tap menu <span className="text-blue-400 font-bold">⋮</span> → <span className="text-blue-400">"Add to Home Screen"</span></p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 bg-white/5 border border-white/8 rounded-2xl p-3.5">
+                    <div className="w-8 h-8 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center shrink-0 text-sm font-black">2</div>
+                    <div>
+                      <p className="text-sm font-bold text-white">Safari / iPhone</p>
+                      <p className="text-xs text-slate-400 mt-0.5">Tap Share <span className="text-blue-400 font-bold">⎙</span> → <span className="text-blue-400">"Add to Home Screen"</span></p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-start gap-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3.5">
+                  <div className="w-8 h-8 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center shrink-0 text-lg">💡</div>
+                  <div>
+                    <p className="text-sm font-bold text-white">Almost ready!</p>
+                    <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">Look for the <span className="text-blue-400 font-bold">install icon ⊕</span> in your Chrome address bar, or come back in a moment and click Install again.</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-3 bg-white/5 border border-white/8 rounded-2xl p-3.5">
-                <div className="w-8 h-8 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center shrink-0 text-sm font-black">2</div>
-                <div>
-                  <p className="text-sm font-bold text-white">Safari / iPhone</p>
-                  <p className="text-xs text-slate-400 mt-0.5">Tap Share <span className="text-blue-400 font-bold">⎙</span> → <span className="text-blue-400">"Add to Home Screen"</span></p>
-                </div>
-              </div>
+              )}
             </div>
 
             <button onClick={() => setShowModal(false)}

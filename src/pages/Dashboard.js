@@ -2,7 +2,6 @@ import React, { useState, useEffect, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useItems } from "../context/ItemsContext";
-import { getAllItems } from "../firebase/firestore";
 import { findMatches, matchLabel } from "../utils/matching";
 import ItemCard from "../components/items/ItemCard";
 import {
@@ -19,7 +18,6 @@ const Dashboard = () => {
   const [loadingMatches, setLoadingMatches] = useState(true);
   const [activeTab, setActiveTab] = useState("recent");
   const [selectedMapLoc, setSelectedMapLoc] = useState(null);
-  const [mapItems, setMapItems] = useState([]);
 
   // AI matching: find top matched pairs
   useEffect(() => {

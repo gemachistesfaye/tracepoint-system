@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { MapPin, Calendar, Tag } from "lucide-react";
-import { timeAgo, STATUS_COLORS, STATUS_LABELS } from "../../utils/helpers";
+import { timeAgo, STATUS_LABELS } from "../../utils/helpers";
 
 const ItemCard = ({ item }) => {
   const isLost = item.type === "lost";

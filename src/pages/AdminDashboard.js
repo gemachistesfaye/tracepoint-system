@@ -82,9 +82,6 @@ const AdminDashboard = () => {
 
   const pendingClaims = claims.filter(c => c.status === "pending");
   const resolved = items.filter(i => i.status === "resolved");
-  const lostItems = items.filter(i => i.type === "lost");
-  const foundItems = items.filter(i => i.type === "found");
-  const recoveryRate = items.length ? Math.round((resolved.length / items.length) * 100) : 0;
   const admins = users.filter(u => u.role === "admin");
 
   const th = "px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-left bg-white/3 border-b border-white/8";

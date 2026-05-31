@@ -1,13 +1,11 @@
 import React, { useMemo } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend,
+  PieChart, Pie, Cell, LineChart, Line, CartesianGrid,
 } from "recharts";
 import { useItems } from "../../context/ItemsContext";
 import { CATEGORIES, LOCATIONS } from "../../utils/helpers";
 import { TrendingUp, MapPin, Tag, CheckCircle } from "lucide-react";
-
-const COLORS = ["#3b82f6", "#06b6d4", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#ec4899", "#6366f1", "#14b8a6"];
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
