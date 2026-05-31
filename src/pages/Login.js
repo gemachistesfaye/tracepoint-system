@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import { MapPin, Loader2, Eye, EyeOff } from "lucide-react";
+import { MapPin, Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
 
 const Login = () => {
   const { login } = useAuth();
@@ -31,6 +31,11 @@ const Login = () => {
       <div className="absolute top-1/4 left-1/3 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl" />
 
       <div className="relative w-full max-w-md">
+        {/* Back to website */}
+        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white mb-6 transition-colors group">
+          <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition-transform" />
+          Back to website
+        </Link>
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 text-white rounded-2xl mb-4 shadow-lg shadow-blue-600/30">
             <MapPin size={26} />
