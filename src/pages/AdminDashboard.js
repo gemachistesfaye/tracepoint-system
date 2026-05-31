@@ -13,7 +13,7 @@ import {
   TrendingUp, AlertCircle, Eye, Clock,
 } from "lucide-react";
 
-const AdminDashboard = ({ tab: tabProp }) => {
+const AdminDashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -21,7 +21,7 @@ const AdminDashboard = ({ tab: tabProp }) => {
     if (location.pathname.includes("/claims")) return "claims";
     if (location.pathname.includes("/items")) return "items";
     if (location.pathname.includes("/users")) return "users";
-    return tabProp || "overview";
+    return "overview";
   };
 
   const [tab, setTab] = useState(getTabFromPath());
@@ -86,14 +86,6 @@ const AdminDashboard = ({ tab: tabProp }) => {
   const foundItems = items.filter(i => i.type === "found");
   const recoveryRate = items.length ? Math.round((resolved.length / items.length) * 100) : 0;
   const admins = users.filter(u => u.role === "admin");
-
-  const tabs = [
-    { key: "overview", label: "Overview", icon: <BarChart3 size={14} /> },
-    { key: "claims", label: "Claims", icon: <FileText size={14} />, badge: pendingClaims.length },
-    { key: "items", label: "Items", icon: <Package size={14} />, badge: items.length },
-    { key: "users", label: "Users", icon: <Users size={14} />, badge: users.length },
-    { key: "analytics", label: "Analytics", icon: <TrendingUp size={14} /> },
-  ];
 
   const th = "px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-left bg-white/3 border-b border-white/8";
   const td = "px-4 py-3.5 text-sm";
