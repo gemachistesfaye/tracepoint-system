@@ -1,44 +1,43 @@
 import React, { useEffect, useState } from "react";
-import { X, Download, Smartphone } from "lucide-react";
+import { X, Download } from "lucide-react";
 
 const PWAInstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
-    // Don't show if dismissed or already installed
-    const dismissed = localStorage.getItem("pwa-dismissed");
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       window.navigator.standalone === true;
+    const dismissed = localStorage.getItem("pwa-dismissed");
 
-    if (dismissed || isStandalone) return;
+    if (isStandalone || dismissed) return;
 
+    // Always show after 3 seconds — no conditions
+    const timer = setTimeout(() => setShowPrompt(true), 3000);
+
+    // Capture native install prompt if available
     const handler = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      setTimeout(() => setShowPrompt(true), 2500);
     };
 
     window.addEventListener("beforeinstallprompt", handler);
-    window.addEventListener("appinstalled", () => setShowPrompt(false));
-
-    // Fallback: show manual instructions after 4s even without the event
-    // (iOS Safari, Firefox, etc.)
-    const fallbackTimer = setTimeout(() => {
-      if (!deferredPrompt) setShowPrompt(true);
-    }, 4000);
+    window.addEventListener("appinstalled", () => {
+      setShowPrompt(false);
+      localStorage.setItem("pwa-dismissed", "true");
+    });
 
     return () => {
+      clearTimeout(timer);
       window.removeEventListener("beforeinstallprompt", handler);
-      clearTimeout(fallbackTimer);
     };
   }, []);
 
   const handleInstall = async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
+      await deferredPrompt.userChoice;
       setDeferredPrompt(null);
     }
     setShowPrompt(false);
@@ -51,8 +50,6 @@ const PWAInstallPrompt = () => {
   };
 
   if (!showPrompt) return null;
-
-  const isNativeInstall = !!deferredPrompt;
 
   return (
     <div className="fixed bottom-6 right-6 z-[999] w-full max-w-sm">
@@ -77,32 +74,41 @@ const PWAInstallPrompt = () => {
         </div>
 
         <p className="text-sm text-slate-300 leading-relaxed mb-4">
-          {isNativeInstall
-            ? "Install the app for faster access, offline support, and a native experience."
-            : "Add TracePoint to your home screen for quick access anytime."}
+          Install the app for faster access, offline support, and a native experience on your campus.
         </p>
 
-        {/* iOS instructions if no native prompt */}
-        {!isNativeInstall && (
-          <div className="bg-white/5 border border-white/8 rounded-xl p-3 mb-4 text-xs text-slate-400 space-y-1">
-            <p className="font-semibold text-slate-300">To install on iOS:</p>
-            <p>1. Tap the Share button <span className="text-blue-400">⎙</span> in Safari</p>
-            <p>2. Scroll down → tap <span className="text-blue-400">"Add to Home Screen"</span></p>
-            <p className="font-semibold text-slate-300 mt-2">On Chrome/Android:</p>
-            <p>Tap the menu <span className="text-blue-400">⋮</span> → <span className="text-blue-400">"Add to Home Screen"</span></p>
+        {/* Show native button OR manual instructions */}
+        {deferredPrompt ? (
+          <div className="flex gap-3">
+            <button onClick={handleInstall}
+              className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-2xl transition-all text-sm shadow-lg shadow-blue-600/20">
+              <Download size={15} /> Install App
+            </button>
+            <button onClick={handleDismiss}
+              className="flex-1 py-3 text-slate-300 font-semibold rounded-2xl hover:bg-white/5 transition-colors text-sm border border-white/10">
+              Not Now
+            </button>
           </div>
+        ) : (
+          <>
+            <div className="bg-white/5 border border-white/8 rounded-xl p-3 mb-4 text-xs text-slate-400 space-y-1.5">
+              <p className="font-bold text-slate-300">📱 Install on Chrome / Android:</p>
+              <p>Tap menu <span className="text-blue-400 font-bold">⋮</span> → <span className="text-blue-400">"Add to Home Screen"</span></p>
+              <p className="font-bold text-slate-300 pt-1">🍎 Install on Safari / iOS:</p>
+              <p>Tap Share <span className="text-blue-400 font-bold">⎙</span> → <span className="text-blue-400">"Add to Home Screen"</span></p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={handleDismiss}
+                className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-2xl transition-all text-sm">
+                <Download size={15} /> Got it
+              </button>
+              <button onClick={handleDismiss}
+                className="flex-1 py-3 text-slate-300 font-semibold rounded-2xl hover:bg-white/5 transition-colors text-sm border border-white/10">
+                Not Now
+              </button>
+            </div>
+          </>
         )}
-
-        <div className="flex gap-3">
-          <button onClick={handleInstall}
-            className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-2xl transition-all hover:-translate-y-0.5 shadow-lg shadow-blue-600/20 text-sm">
-            <Download size={15} /> {isNativeInstall ? "Install App" : "Got it"}
-          </button>
-          <button onClick={handleDismiss}
-            className="flex-1 py-3 text-slate-300 hover:text-white font-semibold rounded-2xl hover:bg-white/5 transition-colors text-sm border border-white/10">
-            Not Now
-          </button>
-        </div>
       </div>
     </div>
   );
