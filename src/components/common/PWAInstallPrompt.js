@@ -37,7 +37,7 @@ const PWAInstallPrompt = () => {
   if (!showPrompt) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[999] w-full max-w-sm px-4">
+    <div className="fixed bottom-6 right-6 z-[999] w-full max-w-sm">
       <div className="bg-[#1a1a2e] border border-white/10 rounded-3xl shadow-2xl shadow-black/60 p-5 backdrop-blur-xl">
         {/* Close */}
         <button onClick={handleDismiss}

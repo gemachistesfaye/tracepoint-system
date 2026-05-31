@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import NotificationBell from "./NotificationBell";
+import InstallButton from "./InstallButton";
 import LogoutDialog from "./LogoutDialog";
 import {
   MapPin, Menu, X, User, Shield,

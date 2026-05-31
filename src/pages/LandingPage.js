@@ -5,6 +5,7 @@ import {
   Zap, Shield, Bell, TrendingUp, Eye, ChevronRight,
   Star, Users, Package, BarChart3,
 } from "lucide-react";
+import InstallButton from "../components/common/InstallButton";
 
 const Counter = ({ target, suffix = "" }) => {
   const [count, setCount] = useState(0);
@@ -89,6 +90,7 @@ const LandingPage = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <InstallButton />
             <Link to="/login" className="hidden sm:inline-flex text-sm font-medium text-slate-400 hover:text-white px-4 py-2 rounded-xl hover:bg-white/5 transition-all">
               Sign In
             </Link>
