@@ -119,24 +119,7 @@ const AdminDashboard = ({ tab: tabProp }) => {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 bg-white/3 border border-white/8 p-1 rounded-2xl w-fit mb-6 flex-wrap">
-          {tabs.map(t => (
-            <button key={t.key} onClick={() => switchTab(t.key)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                tab === t.key
-                  ? "bg-purple-600 text-white shadow-lg shadow-purple-600/20"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-              }`}>
-              {t.icon} {t.label}
-              {t.badge > 0 && (
-                <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${
-                  tab === t.key ? "bg-white/20 text-white" : "bg-white/10 text-slate-300"
-                }`}>{t.badge}</span>
-              )}
-            </button>
-          ))}
-        </div>
+
 
         {loading ? (
           <div className="flex items-center justify-center py-24">
