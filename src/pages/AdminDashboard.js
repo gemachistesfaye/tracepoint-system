@@ -119,30 +119,6 @@ const AdminDashboard = ({ tab: tabProp }) => {
           </div>
         </div>
 
-        {/* Quick stat cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {[
-            { label: "Total Users", value: users.length, sub: `${admins.length} admin${admins.length !== 1 ? "s" : ""}`, icon: <Users size={18} />, color: "blue" },
-            { label: "Pending Claims", value: pendingClaims.length, sub: "awaiting review", icon: <AlertCircle size={18} />, color: "yellow", urgent: pendingClaims.length > 0 },
-            { label: "Total Items", value: items.length, sub: `${lostItems.length} lost · ${foundItems.length} found`, icon: <Package size={18} />, color: "purple" },
-            { label: "Recovery Rate", value: `${recoveryRate}%`, sub: `${resolved.length} resolved`, icon: <TrendingUp size={18} />, color: "emerald" },
-          ].map(s => (
-            <div key={s.label} className={`bg-white/3 border rounded-2xl p-5 transition-all ${
-              s.urgent ? "border-yellow-500/30 bg-yellow-500/5" : "border-white/8"
-            }`}>
-              <div className={`inline-flex p-2.5 rounded-xl mb-3 ${
-                s.color === "blue" ? "bg-blue-500/10 text-blue-400"
-                : s.color === "yellow" ? "bg-yellow-500/10 text-yellow-400"
-                : s.color === "purple" ? "bg-purple-500/10 text-purple-400"
-                : "bg-emerald-500/10 text-emerald-400"
-              }`}>{s.icon}</div>
-              <p className="text-3xl font-black text-white">{s.value}</p>
-              <p className="text-sm text-slate-400 mt-0.5 font-medium">{s.label}</p>
-              <p className="text-xs text-slate-500 mt-0.5">{s.sub}</p>
-            </div>
-          ))}
-        </div>
-
         {/* Tabs */}
         <div className="flex gap-1 bg-white/3 border border-white/8 p-1 rounded-2xl w-fit mb-6 flex-wrap">
           {tabs.map(t => (

@@ -34,25 +34,15 @@ export const CAMPUS_LOCATIONS = {
   "Research Station":        [9.2130, 42.0295],
 };
 
-// Category icon colors
-const CATEGORY_ICONS = {
-  lost: "#ef4444",
-  found: "#10b981",
-  selected: "#3b82f6",
-  landmark: "#64748b",
-};
-
 const CampusMap = ({
   selectedLocation,
   onLocationSelect,
   items = [],
   height = "400px",
   readOnly = false,
-  showSatellite = false,
 }) => {
   const mapRef = useRef(null);
   const leafletMapRef = useRef(null);
-  const layerRef = useRef(null);
 
   useEffect(() => {
     if (leafletMapRef.current || !mapRef.current) return;
@@ -63,36 +53,38 @@ const CampusMap = ({
       zoomControl: false,
     });
 
-    // Add zoom control top-right
     L.control.zoom({ position: "topright" }).addTo(map);
 
-    // Base layers
-    const streetLayer = L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    // Light Google Maps-style tile (Positron)
+    const lightLayer = L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
       { attribution: "© OpenStreetMap © CARTO", subdomains: "abcd", maxZoom: 20 }
     );
 
+    // Satellite layer
     const satelliteLayer = L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       { attribution: "© Esri", maxZoom: 20 }
     );
 
-    const labelsLayer = L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png",
-      { subdomains: "abcd", maxZoom: 20, pane: "overlayPane" }
+    const satelliteLabels = L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+      { maxZoom: 20 }
     );
 
-    // Layer control
-    const baseMaps = { "🗺️ Street": streetLayer, "🛰️ Satellite": satelliteLayer };
-    streetLayer.addTo(map);
-    L.control.layers(baseMaps, {}, { position: "topright" }).addTo(map);
+    lightLayer.addTo(map);
+    L.control.layers(
+      { "🗺️ Map": lightLayer, "🛰️ Satellite": satelliteLayer },
+      {},
+      { position: "topright" }
+    ).addTo(map);
 
-    // Campus boundary circle
+    // Campus outline circle
     L.circle(HARAMAYA_CENTER, {
-      color: "#3b82f6",
-      fillColor: "#3b82f6",
-      fillOpacity: 0.04,
-      weight: 1,
+      color: "#2563eb",
+      fillColor: "#2563eb",
+      fillOpacity: 0.05,
+      weight: 1.5,
       dashArray: "6 4",
       radius: 600,
     }).addTo(map).bindTooltip("Haramaya University Campus", { permanent: false });
@@ -103,103 +95,97 @@ const CampusMap = ({
 
       const icon = L.divIcon({
         className: "",
-        html: `
+        html: `<div style="
+          display:flex;flex-direction:column;align-items:center;
+        ">
           <div style="
-            position:relative;
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-          ">
+            width:${isSelected ? 18 : 11}px;
+            height:${isSelected ? 18 : 11}px;
+            background:${isSelected ? "#2563eb" : "#1e40af"};
+            border:2.5px solid ${isSelected ? "white" : "rgba(255,255,255,0.9)"};
+            border-radius:50%;
+            box-shadow:${isSelected
+              ? "0 0 0 3px rgba(37,99,235,0.3), 0 4px 12px rgba(0,0,0,0.3)"
+              : "0 2px 6px rgba(0,0,0,0.25)"};
+          "></div>
+          ${isSelected ? `
             <div style="
-              width:${isSelected ? 16 : 10}px;
-              height:${isSelected ? 16 : 10}px;
-              background:${isSelected ? "#3b82f6" : "#475569"};
-              border:2px solid ${isSelected ? "#93c5fd" : "#64748b"};
-              border-radius:50%;
-              box-shadow:${isSelected ? "0 0 12px rgba(59,130,246,0.8), 0 0 24px rgba(59,130,246,0.4)" : "0 1px 4px rgba(0,0,0,0.5)"};
-              transition:all 0.3s;
-            "></div>
-            ${isSelected ? `<div style="
-              margin-top:3px;
-              background:#0f1629;
-              color:#93c5fd;
+              margin-top:4px;
+              background:white;
+              color:#1e40af;
               font-size:9px;
-              font-weight:700;
-              padding:2px 6px;
-              border-radius:4px;
-              border:1px solid rgba(59,130,246,0.3);
+              font-weight:800;
+              padding:3px 8px;
+              border-radius:6px;
+              border:1px solid #bfdbfe;
               white-space:nowrap;
-              max-width:100px;
+              max-width:120px;
               text-align:center;
               overflow:hidden;
               text-overflow:ellipsis;
+              box-shadow:0 2px 8px rgba(0,0,0,0.15);
             ">${name}</div>` : ""}
-          </div>`,
-        iconSize: [isSelected ? 100 : 10, isSelected ? 40 : 10],
-        iconAnchor: [isSelected ? 50 : 5, isSelected ? 8 : 5],
+        </div>`,
+        iconSize: [isSelected ? 130 : 11, isSelected ? 44 : 11],
+        iconAnchor: [isSelected ? 65 : 5, isSelected ? 9 : 5],
       });
 
       const marker = L.marker(coords, { icon }).addTo(map)
         .bindTooltip(`📍 ${name}`, {
           direction: "top",
-          className: "tp-tooltip",
-          offset: [0, -8],
+          className: "tp-tooltip-light",
+          offset: [0, -10],
         });
 
       if (!readOnly && onLocationSelect) {
         marker.on("click", () => onLocationSelect(name));
-        marker.getElement()?.style.setProperty("cursor", "pointer");
       }
     });
 
-    // Item markers with clusters feel
-    const itemGroups = {};
+    // Item markers
+    const offsets = {};
     items.forEach((item) => {
       const coords = CAMPUS_LOCATIONS[item.location];
       if (!coords) return;
-
-      // Offset slightly to avoid overlap
       const key = item.location;
-      if (!itemGroups[key]) itemGroups[key] = 0;
-      itemGroups[key]++;
-      const offset = itemGroups[key] * 0.00005;
+      offsets[key] = (offsets[key] || 0) + 1;
+      const off = offsets[key] * 0.00006;
 
       const icon = L.divIcon({
         className: "",
         html: `<div style="
-          width:12px; height:12px;
+          width:13px;height:13px;
           background:${item.type === "lost" ? "#ef4444" : "#10b981"};
-          border:2px solid white;
+          border:2.5px solid white;
           border-radius:50%;
-          box-shadow:0 2px 6px rgba(0,0,0,0.4);
+          box-shadow:0 2px 6px rgba(0,0,0,0.3);
         "></div>`,
-        iconSize: [12, 12],
-        iconAnchor: [6, 6],
+        iconSize: [13, 13], iconAnchor: [6, 6],
       });
 
-      L.marker([coords[0] + offset, coords[1] + offset], { icon })
+      L.marker([coords[0] + off, coords[1] + off], { icon })
         .addTo(map)
         .bindPopup(`
-          <div style="min-width:160px">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-              <span style="font-size:10px;font-weight:800;color:${item.type === "lost" ? "#ef4444" : "#10b981"};background:${item.type === "lost" ? "rgba(239,68,68,0.15)" : "rgba(16,185,129,0.15)"};padding:2px 8px;border-radius:20px">${item.type.toUpperCase()}</span>
-              <span style="font-size:10px;color:#64748b">${item.status}</span>
+          <div style="min-width:160px;font-family:system-ui,sans-serif">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+              <span style="
+                font-size:10px;font-weight:800;
+                color:${item.type === "lost" ? "#dc2626" : "#059669"};
+                background:${item.type === "lost" ? "#fee2e2" : "#d1fae5"};
+                padding:2px 8px;border-radius:20px
+              ">${item.type.toUpperCase()}</span>
+              <span style="font-size:10px;color:#6b7280;text-transform:capitalize">${item.status}</span>
             </div>
-            <p style="font-weight:700;font-size:13px;margin:0 0 4px">${item.title}</p>
-            <p style="font-size:11px;color:#94a3b8;margin:0 0 2px">📂 ${item.category}</p>
-            <p style="font-size:11px;color:#94a3b8;margin:0">📍 ${item.location}</p>
-          </div>`, {
-          className: "tp-popup",
-        });
+            <p style="font-weight:700;font-size:13px;margin:0 0 4px;color:#111827">${item.title}</p>
+            <p style="font-size:11px;color:#6b7280;margin:0 0 2px">📂 ${item.category}</p>
+            <p style="font-size:11px;color:#6b7280;margin:0">📍 ${item.location}</p>
+          </div>`, { className: "tp-popup-light" });
     });
 
     leafletMapRef.current = map;
-    layerRef.current = streetLayer;
-
     return () => { map.remove(); leafletMapRef.current = null; };
   }, []);
 
-  // Fly to selected location
   useEffect(() => {
     if (!leafletMapRef.current || !selectedLocation) return;
     const coords = CAMPUS_LOCATIONS[selectedLocation];
@@ -207,53 +193,55 @@ const CampusMap = ({
   }, [selectedLocation]);
 
   return (
-    <div style={{ height }} className="rounded-2xl overflow-hidden border border-white/10 relative">
+    <div style={{ height }} className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm relative">
       <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
       <style>{`
-        .tp-tooltip {
-          background: #0f1629 !important;
-          border: 1px solid rgba(59,130,246,0.3) !important;
-          color: white !important;
+        .tp-tooltip-light {
+          background: white !important;
+          border: 1px solid #e2e8f0 !important;
+          color: #1e293b !important;
           font-size: 11px !important;
-          font-weight: 600 !important;
+          font-weight: 700 !important;
           border-radius: 8px !important;
           padding: 4px 10px !important;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
         }
-        .tp-tooltip::before { display: none !important; }
-        .tp-popup .leaflet-popup-content-wrapper {
-          background: #0f1629 !important;
-          border: 1px solid rgba(255,255,255,0.1) !important;
+        .tp-tooltip-light::before { display:none !important; }
+        .tp-popup-light .leaflet-popup-content-wrapper {
+          background: white !important;
+          border: 1px solid #e2e8f0 !important;
           border-radius: 14px !important;
-          color: white !important;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
+          color: #111827 !important;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.2) !important;
           padding: 4px !important;
         }
-        .tp-popup .leaflet-popup-content { margin: 10px 12px !important; }
-        .tp-popup .leaflet-popup-tip-container { display: none !important; }
-        .leaflet-container { background: #0a0f1e !important; font-family: inherit !important; }
+        .tp-popup-light .leaflet-popup-content { margin: 10px 12px !important; }
+        .tp-popup-light .leaflet-popup-tip-container { display:none !important; }
+        .leaflet-container { background: #f8fafc !important; font-family: system-ui,sans-serif !important; }
         .leaflet-control-zoom a {
-          background: #0f1629 !important;
-          color: white !important;
-          border-color: rgba(255,255,255,0.1) !important;
+          background: white !important;
+          color: #374151 !important;
+          border-color: #e2e8f0 !important;
           font-size: 16px !important;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
         }
-        .leaflet-control-zoom a:hover { background: #1e293b !important; }
+        .leaflet-control-zoom a:hover { background: #f1f5f9 !important; color: #111827 !important; }
         .leaflet-control-layers {
-          background: #0f1629 !important;
-          border: 1px solid rgba(255,255,255,0.1) !important;
+          background: white !important;
+          border: 1px solid #e2e8f0 !important;
           border-radius: 10px !important;
-          color: white !important;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+          color: #374151 !important;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
+          font-size: 12px !important;
         }
-        .leaflet-control-layers label { color: #cbd5e1 !important; font-size: 12px !important; }
-        .leaflet-control-layers-toggle { background-color: #0f1629 !important; }
+        .leaflet-control-layers label { color: #374151 !important; }
         .leaflet-control-attribution {
-          background: rgba(10,15,30,0.8) !important;
-          color: #475569 !important;
+          background: rgba(255,255,255,0.8) !important;
+          color: #9ca3af !important;
           font-size: 9px !important;
+          border-radius: 4px 0 0 0 !important;
         }
-        .leaflet-control-attribution a { color: #3b82f6 !important; }
+        .leaflet-control-attribution a { color: #2563eb !important; }
       `}</style>
     </div>
   );

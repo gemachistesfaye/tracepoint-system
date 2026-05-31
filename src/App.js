@@ -19,6 +19,7 @@ import MyItems from "./pages/MyItems";
 import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 import Analytics from "./pages/Analytics";
+import PWAInstallPrompt from "./components/common/PWAInstallPrompt";
 
 // Root: guests → landing, admins → /admin, users → /home
 const RootRoute = () => {
@@ -44,6 +45,7 @@ const App = () => (
           duration: 3500,
           style: { background: "#0f1629", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" },
         }} />
+        <PWAInstallPrompt />
         <Routes>
           {/* Smart root */}
           <Route path="/" element={<RootRoute />} />
