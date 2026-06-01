@@ -1,16 +1,47 @@
 {
   "short_name": "TracePoint",
-  "name": "TracePoint — Haramaya University Lost & Found",
+  "name": "TracePoint - HU Lost & Found",
   "description": "Smart lost & found platform for Haramaya University campus",
   "icons": [
-    { "src": "favicon.ico", "sizes": "64x64 32x32 24x24 16x16", "type": "image/x-icon" },
-    { "src": "logo192.png", "type": "image/png", "sizes": "192x192", "purpose": "any maskable" },
-    { "src": "logo512.png", "type": "image/png", "sizes": "512x512" }
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
   ],
-  "start_url": ".",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#0a0f1e",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "theme_color": "#2563eb",
   "background_color": "#0a0f1e",
-  "orientation": "portrait-primary",
-  "categories": ["utilities", "education"]
+  "orientation": "any",
+  "categories": ["utilities", "education"],
+  "lang": "en",
+  "screenshots": []
 }

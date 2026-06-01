@@ -2,8 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg?v=2" />
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.svg?v=2" />
+    <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg" />
+    <link rel="alternate icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#2563eb" />
     <meta name="description" content="TracePoint — Haramaya University Smart Lost & Found System" />
@@ -13,6 +13,14 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>TracePoint - HU</title>
+    <!-- Register SW immediately before React loads -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(reg) { console.log('[SW] Registered:', reg.scope); })
+          .catch(function(err) { console.log('[SW] Failed:', err); });
+      }
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
