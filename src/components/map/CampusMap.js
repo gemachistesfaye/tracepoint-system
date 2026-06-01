@@ -11,27 +11,27 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-export const HARAMAYA_CENTER = [9.2167, 42.0347];
+export const HARAMAYA_CENTER = [9.4233, 42.0372];
 
 export const CAMPUS_LOCATIONS = {
-  "Main Library":            [9.2178, 42.0341],
-  "Science Block":           [9.2182, 42.0328],
-  "Engineering Block":       [9.2170, 42.0320],
-  "Agriculture Block":       [9.2158, 42.0352],
-  "Student Cafeteria":       [9.2153, 42.0338],
-  "Administration Building": [9.2188, 42.0333],
-  "Sports Complex":          [9.2138, 42.0348],
-  "Dormitory Area":          [9.2143, 42.0318],
-  "Main Gate":               [9.2195, 42.0362],
-  "Parking Area":            [9.2192, 42.0358],
-  "Medical Faculty":         [9.2174, 42.0310],
-  "Veterinary Faculty":      [9.2156, 42.0307],
-  "College of Computing":    [9.2165, 42.0335],
-  "Student Union":           [9.2160, 42.0342],
-  "Health Center":           [9.2150, 42.0355],
-  "Post Office":             [9.2190, 42.0345],
-  "Haramaya Lake":           [9.2120, 42.0380],
-  "Research Station":        [9.2130, 42.0295],
+  "Main Library":            [9.4240, 42.0368],
+  "Science Block":           [9.4248, 42.0355],
+  "Engineering Block":       [9.4235, 42.0345],
+  "Agriculture Block":       [9.4220, 42.0385],
+  "Student Cafeteria":       [9.4215, 42.0370],
+  "Administration Building": [9.4255, 42.0360],
+  "Sports Complex":          [9.4195, 42.0380],
+  "Dormitory Area":          [9.4200, 42.0345],
+  "Main Gate":               [9.4260, 42.0395],
+  "Parking Area":            [9.4258, 42.0390],
+  "Medical Faculty":         [9.4238, 42.0338],
+  "Veterinary Faculty":      [9.4218, 42.0335],
+  "College of Computing":    [9.4228, 42.0362],
+  "Student Union":           [9.4222, 42.0372],
+  "Health Center":           [9.4210, 42.0388],
+  "Post Office":             [9.4252, 42.0375],
+  "Haramaya Lake":           [9.4180, 42.0420],
+  "Research Station":        [9.4190, 42.0320],
 };
 
 const CampusMap = ({
