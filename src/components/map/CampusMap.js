@@ -14,24 +14,24 @@ L.Icon.Default.mergeOptions({
 export const HARAMAYA_CENTER = [9.4233, 42.0372];
 
 export const CAMPUS_LOCATIONS = {
-  "Main Library":            [9.4240, 42.0368],
-  "Science Block":           [9.4248, 42.0355],
-  "Engineering Block":       [9.4235, 42.0345],
-  "Agriculture Block":       [9.4220, 42.0385],
-  "Student Cafeteria":       [9.4215, 42.0370],
-  "Administration Building": [9.4255, 42.0360],
-  "Sports Complex":          [9.4195, 42.0380],
-  "Dormitory Area":          [9.4200, 42.0345],
-  "Main Gate":               [9.4260, 42.0395],
-  "Parking Area":            [9.4258, 42.0390],
-  "Medical Faculty":         [9.4238, 42.0338],
-  "Veterinary Faculty":      [9.4218, 42.0335],
-  "College of Computing":    [9.4228, 42.0362],
-  "Student Union":           [9.4222, 42.0372],
-  "Health Center":           [9.4210, 42.0388],
-  "Post Office":             [9.4252, 42.0375],
-  "Haramaya Lake":           [9.4180, 42.0420],
-  "Research Station":        [9.4190, 42.0320],
+  "Main University Gate":          [9.4282, 42.0372],
+  "University Stadium":            [9.4290, 42.0318],
+  "University Academy":            [9.4285, 42.0328],
+  "Administration Building":       [9.4270, 42.0355],
+  "Main Library":                  [9.4265, 42.0368],
+  "Research Farm 1":               [9.4245, 42.0325],
+  "Research Farm 2":               [9.4245, 42.0395],
+  "College of Agriculture":        [9.4255, 42.0340],
+  "Student Cafeteria":             [9.4260, 42.0362],
+  "Dormitory Area":                [9.4275, 42.0342],
+  "Health Center":                 [9.4260, 42.0378],
+  "Old Institute of Technology":   [9.4218, 42.0380],
+  "Veterinary Faculty":            [9.4230, 42.0345],
+  "College of Computing":          [9.4250, 42.0362],
+  "Post Office":                   [9.4278, 42.0365],
+  "Parking Area":                  [9.4280, 42.0358],
+  "Sumeya Mosque":                 [9.4182, 42.0355],
+  "Haramaya Lake":                 [9.4150, 42.0420],
 };
 
 const CampusMap = ({
@@ -75,13 +75,13 @@ const CampusMap = ({
     ).addTo(map);
 
     // Campus outline circle
-    L.circle(HARAMAYA_CENTER, {
+    L.circle([9.4240, 42.0360], {
       color: "#2563eb",
       fillColor: "#2563eb",
-      fillOpacity: 0.05,
+      fillOpacity: 0.04,
       weight: 1.5,
       dashArray: "6 4",
-      radius: 600,
+      radius: 900,
     }).addTo(map).bindTooltip("Haramaya University Campus", { permanent: false });
 
     // Landmark markers
