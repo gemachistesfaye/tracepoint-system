@@ -324,7 +324,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   <Suspense fallback={<div className="h-64 bg-white/5 rounded-2xl animate-pulse"/>}>
-                    <CampusMap items={items} readOnly height="280px" />
+                    <CampusMap items={items} readOnly height="300px" showFilter />
                   </Suspense>
                 </div>
 

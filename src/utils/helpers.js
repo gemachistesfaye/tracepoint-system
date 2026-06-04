@@ -13,19 +13,36 @@ export const CATEGORIES = [
 ];
 
 export const LOCATIONS = [
-  "Main Library",
-  "Science Block",
-  "Engineering Block",
-  "Agriculture Block",
-  "Student Cafeteria",
+  // Main Campus
+  "Main University Gate",
   "Administration Building",
-  "Sports Complex",
-  "Dormitory Area",
-  "Main Gate",
+  "Main Library",
+  "Student Cafeteria",
+  "College of Computing",
+  "College of Agriculture",
+  "Health Center",
+  "Post Office",
   "Parking Area",
-  "Medical Faculty",
+  "Dormitory Area",
+  "University Stadium",
+  "University Academy",
+  "Research Farm 1",
+  "Research Farm 2",
+  "Sumeya Mosque",
+  "Haramaya Lake",
+  // HIT Campus
+  "HIT Main Building",
+  "HIT Library",
+  "HIT Laboratory",
+  "HIT Cafeteria",
+  "HIT Dormitory",
+  "HIT Gate",
+  // Veterinary Campus
   "Veterinary Faculty",
-  "Other",
+  "Veterinary Clinic",
+  "Veterinary Laboratory",
+  "Veterinary Dormitory",
+  "Veterinary Gate",
 ];
 
 export const STATUS_COLORS = {

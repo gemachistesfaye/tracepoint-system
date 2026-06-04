@@ -151,7 +151,8 @@ const Dashboard = () => {
             selectedLocation={selectedMapLoc}
             onLocationSelect={setSelectedMapLoc}
             items={items}
-            height="320px"
+            height="340px"
+            showFilter
             readOnly={false}
           />
         </Suspense>
