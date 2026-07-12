@@ -40,6 +40,19 @@
 
 ---
 
+## 📸 Screenshots
+
+| | |
+|---|---|
+| **Landing Page** | **Login** |
+| ![Landing](asset/landing.png) | ![Login](asset/login.png) |
+| **Student Dashboard** | **Analytics** |
+| ![Dashboard](asset/dashboard.png) | ![Analytics](asset/analytics.png) |
+| **Admin Overview** | **Admin Claims** |
+| ![Admin Overview](asset/admin-overview.png) | ![Admin Claims](asset/admin-claims.png) |
+
+---
+
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
