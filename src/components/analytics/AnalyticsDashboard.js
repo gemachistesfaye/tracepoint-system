@@ -43,7 +43,7 @@ const AnalyticsDashboard = () => {
     const statusData = [
       { name: "Open", value: items.filter(i => i.status === "open").length, color: "#10b981" },
       { name: "Claimed", value: items.filter(i => i.status === "claimed").length, color: "#f59e0b" },
-      { name: "Resolved", value: resolved.length, color: "#3b82f6" },
+      { name: "Resolved", value: resolved.length, color: "#2E7D32" },
     ].filter(d => d.value > 0);
 
     const timeline = Array.from({ length: 7 }, (_, i) => {
@@ -66,14 +66,14 @@ const AnalyticsDashboard = () => {
   }, [items]);
 
   const metricCards = [
-    { label: "Total Reports", value: items.length, icon: <Tag size={18} />, color: "blue" },
+    { label: "Total Reports", value: items.length, icon: <Tag size={18} />, color: "green" },
     { label: "Lost Items", value: stats.lost.length, icon: <MapPin size={18} />, color: "red" },
     { label: "Found Items", value: stats.found.length, icon: <CheckCircle size={18} />, color: "emerald" },
     { label: "Recovery Rate", value: `${stats.rate}%`, icon: <TrendingUp size={18} />, color: "purple" },
   ];
 
   const colorMap = {
-    blue: "bg-blue-50 text-blue-600", red: "bg-red-50 text-red-500",
+    green: "bg-primary-50 text-primary-600", red: "bg-red-50 text-red-500",
     emerald: "bg-emerald-50 text-emerald-600", purple: "bg-purple-50 text-purple-600",
   };
 
@@ -81,7 +81,7 @@ const AnalyticsDashboard = () => {
     return (
       <div className="text-center py-16 text-gray-400">
         <TrendingUp size={48} className="mx-auto mb-3 opacity-20" />
-        <p className="text-gray-500">No data yet — analytics will appear once items are reported.</p>
+        <p className="text-gray-500">No data yet &mdash; analytics will appear once items are reported.</p>
       </div>
     );
   }
@@ -161,7 +161,7 @@ const AnalyticsDashboard = () => {
 
       {stats.locationData.length > 0 && (
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-4">Hot Zones — Top Locations</h3>
+          <h3 className="text-sm font-bold text-gray-900 mb-4">Hot Zones &mdash; Top Locations</h3>
           <div className="space-y-2.5">
             {stats.locationData.map((loc, i) => {
               const maxVal = stats.locationData[0]?.total || 1;
@@ -173,7 +173,7 @@ const AnalyticsDashboard = () => {
                   <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all" style={{
                       width: `${pct}%`,
-                      background: `linear-gradient(90deg, #3b82f6, #8b5cf6)`,
+                      background: `linear-gradient(90deg, #2E7D32, #43A047)`,
                     }} />
                   </div>
                   <span className="text-xs font-bold text-gray-900 w-6 text-right">{loc.total}</span>

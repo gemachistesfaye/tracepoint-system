@@ -64,12 +64,12 @@ const ItemDetail = () => {
     setResolving(false);
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 size={28} className="animate-spin text-blue-500" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 size={28} className="animate-spin text-primary-500" /></div>;
   if (!item) return (
     <div className="text-center py-20">
       <AlertCircle size={48} className="mx-auto mb-3 opacity-20 text-gray-400" />
       <p className="text-gray-500">Item not found.</p>
-      <Link to="/" className="text-blue-600 text-sm mt-2 inline-block hover:underline">Back to Home</Link>
+      <Link to="/" className="text-primary-600 text-sm mt-2 inline-block hover:underline">Back to Home</Link>
     </div>
   );
 
@@ -79,10 +79,10 @@ const ItemDetail = () => {
     resolved: "bg-gray-100 text-gray-500 border-gray-200",
   };
 
-  const matchColors = { emerald: "text-emerald-600 bg-emerald-50", blue: "text-blue-600 bg-blue-50", yellow: "text-amber-600 bg-amber-50", gray: "text-gray-500 bg-gray-100" };
+  const matchColors = { emerald: "text-emerald-600 bg-emerald-50", blue: "text-primary-600 bg-primary-50", yellow: "text-amber-600 bg-amber-50", gray: "text-gray-500 bg-gray-100" };
 
   const timeline = [
-    { icon: <PlusIcon />, label: `${item.type === "lost" ? "Lost" : "Found"} item reported`, time: timeAgo(item.createdAt), color: "blue" },
+    { icon: <PlusIcon />, label: `${item.type === "lost" ? "Lost" : "Found"} item reported`, time: timeAgo(item.createdAt), color: "green" },
     ...(item.status === "claimed" ? [{ icon: <ClaimIcon />, label: "Ownership claim submitted", time: "Pending review", color: "yellow" }] : []),
     ...(item.status === "resolved" ? [
       { icon: <ClaimIcon />, label: "Claim submitted", time: "", color: "yellow" },
@@ -151,7 +151,7 @@ const ItemDetail = () => {
               <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-100">
                 {canClaim && (
                   <button onClick={() => setShowClaim(true)}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl transition-all hover:-translate-y-0.5">
+                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold px-5 py-2.5 rounded-xl transition-all hover:-translate-y-0.5">
                     <CheckCircle size={16} /> Claim This Item
                   </button>
                 )}
@@ -168,7 +168,7 @@ const ItemDetail = () => {
                   </button>
                 )}
                 {!currentUser && (
-                  <Link to="/login" className="text-sm text-blue-600 font-medium hover:underline self-center">Sign in to claim</Link>
+                  <Link to="/login" className="text-sm text-primary-600 font-medium hover:underline self-center">Sign in to claim</Link>
                 )}
               </div>
             </div>
@@ -177,7 +177,7 @@ const ItemDetail = () => {
           {item.location && (
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
-                <MapPin size={16} className="text-blue-500" />
+                <MapPin size={16} className="text-primary-500" />
                 <h3 className="font-bold text-gray-900 text-sm">Location on Campus</h3>
                 <span className="text-xs text-gray-400 ml-auto">{item.location}</span>
               </div>
@@ -199,7 +199,7 @@ const ItemDetail = () => {
                 <div key={i} className="flex gap-3">
                   <div className="flex flex-col items-center">
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${
-                      event.color === "blue" ? "bg-blue-100 text-blue-600"
+                      event.color === "green" ? "bg-primary-100 text-primary-600"
                       : event.color === "yellow" ? "bg-amber-100 text-amber-600"
                       : "bg-emerald-100 text-emerald-600"
                     }`}>{event.icon}</div>
@@ -222,10 +222,10 @@ const ItemDetail = () => {
               </div>
               <div className="space-y-3">
                 {aiMatches.map((m, i) => {
-                  const { label, color } = matchLabel(m.score);
+                  const { color } = matchLabel(m.score);
                   return (
                     <Link key={i} to={`/items/${m.item.id}`}
-                      className="block bg-gray-50 border border-gray-200 rounded-xl p-3 hover:border-purple-300 hover:bg-purple-50 transition-all">
+                      className="block bg-gray-50 border border-gray-200 rounded-xl p-3 hover:border-primary-300 hover:bg-primary-50 transition-all">
                       <div className="flex items-center justify-between mb-1">
                         <span className={`text-xs font-black ${m.item.type === "lost" ? "text-red-500" : "text-emerald-600"}`}>
                           {m.item.type.toUpperCase()}
@@ -249,7 +249,7 @@ const ItemDetail = () => {
 };
 
 const PlusIcon = () => <span style={{fontSize:"10px",fontWeight:"bold"}}>+</span>;
-const ClaimIcon = () => <span style={{fontSize:"9px",fontWeight:"bold"}}>✓</span>;
-const ResolvedIcon = () => <span style={{fontSize:"9px",fontWeight:"bold"}}>★</span>;
+const ClaimIcon = () => <span style={{fontSize:"9px",fontWeight:"bold"}}>&#10003;</span>;
+const ResolvedIcon = () => <span style={{fontSize:"9px",fontWeight:"bold"}}>&#9733;</span>;
 
 export default ItemDetail;

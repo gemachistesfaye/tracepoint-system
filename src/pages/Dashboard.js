@@ -6,7 +6,7 @@ import { findMatches, matchLabel } from "../utils/matching";
 import ItemCard from "../components/items/ItemCard";
 import {
   PlusCircle, Search, Zap, ArrowRight, Package,
-  FileText, CheckCircle, MapPin, Loader2, TrendingUp,
+  CheckCircle, MapPin, Loader2, TrendingUp,
 } from "lucide-react";
 
 const CampusMap = lazy(() => import("../components/map/CampusMap"));
@@ -44,14 +44,14 @@ const Dashboard = () => {
   const myResolved = myItems.filter(i => i.status === "resolved");
 
   const quickStats = [
-    { label: "Open Reports", value: open.length, icon: <Package size={16} />, color: "blue" },
+    { label: "Open Reports", value: open.length, icon: <Package size={16} />, color: "green" },
     { label: "Lost Items", value: lostItems.length, icon: <Search size={16} />, color: "red" },
     { label: "Found Items", value: foundItems.length, icon: <CheckCircle size={16} />, color: "emerald" },
     { label: "Resolved", value: resolved.length, icon: <TrendingUp size={16} />, color: "purple" },
   ];
 
   const colorMap = {
-    blue: "bg-primary-50 text-primary-600",
+    green: "bg-primary-50 text-primary-600",
     red: "bg-red-50 text-red-600",
     emerald: "bg-emerald-50 text-emerald-600",
     purple: "bg-purple-50 text-purple-600",
@@ -66,7 +66,7 @@ const Dashboard = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-gray-900">
-            Welcome back, {userProfile?.name?.split(" ")[0] || "Student"} 👋
+            Welcome back, {userProfile?.name?.split(" ")[0] || "Student"}
           </h1>
           <p className="text-gray-500 text-sm mt-1">Here's what's happening on campus today</p>
         </div>
@@ -92,7 +92,7 @@ const Dashboard = () => {
           <div className="bg-primary-100 text-primary-600 p-2.5 rounded-xl"><Package size={20} /></div>
           <div>
             <p className="font-bold text-gray-900 text-sm">My Reports: {myItems.length}</p>
-            <p className="text-xs text-gray-500">{myResolved.length} resolved · {myItems.length - myResolved.length} active</p>
+            <p className="text-xs text-gray-500">{myResolved.length} resolved &middot; {myItems.length - myResolved.length} active</p>
           </div>
         </div>
         <Link to="/my-items" className="text-xs font-bold bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl transition-all flex items-center gap-1">
@@ -117,7 +117,7 @@ const Dashboard = () => {
         ) : aiMatches.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
             <Zap size={32} className="mx-auto mb-2 opacity-20" />
-            <p className="text-sm">No matches yet — add more reports to see AI suggestions</p>
+            <p className="text-sm">No matches yet &mdash; add more reports to see AI suggestions</p>
           </div>
         ) : (
           <div className="space-y-3">

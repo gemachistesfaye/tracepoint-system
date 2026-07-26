@@ -58,14 +58,14 @@ const PWAInstallPrompt = () => {
         </button>
 
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/30 shrink-0">
+          <div className="w-16 h-16 bg-primary-600 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-600/30 shrink-0">
             <svg viewBox="0 0 32 32" width="34" height="34">
               <path d="M16 3C11.58 3 8 6.58 8 11c0 6 8 18 8 18s8-12 8-18c0-4.42-3.58-8-8-8z" fill="white"/>
-              <circle cx="16" cy="11" r="3" fill="#2563eb"/>
+              <circle cx="16" cy="11" r="3" fill="#2E7D32"/>
             </svg>
           </div>
           <div>
-            <p className="font-black text-gray-900 text-lg leading-tight">TracePoint - HU</p>
+            <p className="font-black text-gray-900 text-lg leading-tight">HU Lost & Found</p>
             <p className="text-sm text-gray-500 mt-0.5">Quick access on your device</p>
           </div>
         </div>
@@ -77,7 +77,7 @@ const PWAInstallPrompt = () => {
         {deferredPrompt ? (
           <div className="flex gap-3">
             <button onClick={handleInstall}
-              className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl transition-all text-sm shadow-lg shadow-blue-600/20">
+              className="flex-1 flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-2xl transition-all text-sm shadow-lg shadow-primary-600/20">
               <Download size={15} /> Install App
             </button>
             <button onClick={handleDismiss}
@@ -86,24 +86,10 @@ const PWAInstallPrompt = () => {
             </button>
           </div>
         ) : (
-          <>
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 mb-4 text-xs text-gray-500 space-y-1.5">
-              <p className="font-bold text-gray-700">📱 Install on Chrome / Android:</p>
-              <p>Tap menu <span className="text-blue-600 font-bold">⋮</span> → <span className="text-blue-600">"Add to Home Screen"</span></p>
-              <p className="font-bold text-gray-700 pt-1">🍎 Install on Safari / iOS:</p>
-              <p>Tap Share <span className="text-blue-600 font-bold">⎙</span> → <span className="text-blue-600">"Add to Home Screen"</span></p>
-            </div>
-            <div className="flex gap-3">
-              <button onClick={handleDismiss}
-                className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl transition-all text-sm">
-                <Download size={15} /> Got it
-              </button>
-              <button onClick={handleDismiss}
-                className="flex-1 py-3 text-gray-600 font-semibold rounded-2xl hover:bg-gray-50 transition-colors text-sm border border-gray-200">
-                Not Now
-              </button>
-            </div>
-          </>
+          <button onClick={handleDismiss}
+            className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-2xl transition-all text-sm shadow-lg shadow-primary-600/20">
+            Got it
+          </button>
         )}
       </div>
     </div>

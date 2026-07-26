@@ -18,6 +18,7 @@ import ReportItem from "./pages/ReportItem";
 import Search from "./pages/Search";
 import MyItems from "./pages/MyItems";
 import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import AdminDashboard from "./pages/AdminDashboard";
 import Analytics from "./pages/Analytics";
 import PWAInstallPrompt from "./components/common/PWAInstallPrompt";
@@ -97,6 +98,7 @@ const App = () => (
             <Route path="/report" element={<AppLayout><ProtectedRoute><ReportItem /></ProtectedRoute></AppLayout>} />
             <Route path="/my-items" element={<AppLayout><ProtectedRoute><MyItems /></ProtectedRoute></AppLayout>} />
             <Route path="/profile" element={<AppLayout><ProtectedRoute><Profile /></ProtectedRoute></AppLayout>} />
+            <Route path="/settings" element={<AppLayout><ProtectedRoute><Settings /></ProtectedRoute></AppLayout>} />
             <Route path="/analytics" element={<AppLayout><ProtectedRoute><Analytics /></ProtectedRoute></AppLayout>} />
             <Route path="/admin" element={<AppLayout><AdminRoute><AdminDashboard /></AdminRoute></AppLayout>} />
             <Route path="/admin/items" element={<AppLayout><AdminRoute><AdminDashboard tab="items" /></AdminRoute></AppLayout>} />

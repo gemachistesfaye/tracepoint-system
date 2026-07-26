@@ -24,7 +24,7 @@ const ClaimModal = ({ item, onClose }) => {
     }
   };
 
-  const inputClass = "w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all";
+  const inputClass = "w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all";
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -39,7 +39,7 @@ const ClaimModal = ({ item, onClose }) => {
           </button>
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
-          <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl p-3 text-sm text-blue-700">
+          <div className="flex items-start gap-3 bg-primary-50 border border-primary-100 rounded-xl p-3 text-sm text-primary-700">
             <Shield size={16} className="mt-0.5 shrink-0" />
             Provide proof of ownership. Your claim will be reviewed by an admin.
           </div>
@@ -48,6 +48,22 @@ const ClaimModal = ({ item, onClose }) => {
             <input type="tel" placeholder="+251 9XX XXX XXX" className={inputClass}
               {...register("phone", { required: "Phone number is required" })} />
             {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone.message}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-1.5">What color is the item? *</label>
+            <input type="text" placeholder="e.g. Black, Blue with white stripes" className={inputClass}
+              {...register("itemColor", { required: "Color is required" })} />
+            {errors.itemColor && <p className="text-xs text-red-500 mt-1">{errors.itemColor.message}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-1.5">Any stickers or unique marks?</label>
+            <input type="text" placeholder="e.g. Sticker on back, scratch near camera" className={inputClass}
+              {...register("uniqueMarks")} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-1.5">Brand or model?</label>
+            <input type="text" placeholder="e.g. Apple, Samsung Galaxy S21" className={inputClass}
+              {...register("brand")} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1.5">Proof of Ownership *</label>
@@ -67,7 +83,7 @@ const ClaimModal = ({ item, onClose }) => {
               Cancel
             </button>
             <button type="submit" disabled={isSubmitting}
-              className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50">
+              className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50">
               {isSubmitting && <Loader2 size={14} className="animate-spin" />} Submit Claim
             </button>
           </div>

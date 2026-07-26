@@ -40,7 +40,7 @@ const Login = () => {
             <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-600 text-white rounded-2xl mb-4 shadow-lg shadow-primary-600/30">
               <MapPin size={26} />
             </div>
-            <h1 className="text-2xl font-black text-gray-900">TracePoint</h1>
+            <h1 className="text-2xl font-black text-gray-900">HU Lost & Found</h1>
             <p className="text-sm text-gray-500 mt-1">Haramaya University Lost & Found</p>
           </div>
 

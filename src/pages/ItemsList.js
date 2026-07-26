@@ -21,7 +21,7 @@ const ItemsList = () => {
   if (status) filtered = filtered.filter(i => i.status === status);
 
   const hasFilters = query || category || location || status;
-  const selectClass = "bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  const selectClass = "bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500";
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -39,14 +39,14 @@ const ItemsList = () => {
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input type="text" value={query} onChange={e => setQuery(e.target.value)}
               placeholder={`Search ${type} items...`}
-              className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500" />
           </div>
           <button onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-medium transition-colors ${
-              showFilters ? "border-blue-500 bg-blue-50 text-blue-600" : "border-gray-200 text-gray-500 hover:bg-gray-50"
+              showFilters ? "border-primary-500 bg-primary-50 text-primary-600" : "border-gray-200 text-gray-500 hover:bg-gray-50"
             }`}>
             <SlidersHorizontal size={16} /> Filters
-            {hasFilters && <span className="w-2 h-2 bg-blue-500 rounded-full" />}
+            {hasFilters && <span className="w-2 h-2 bg-primary-500 rounded-full" />}
           </button>
         </div>
         {showFilters && (

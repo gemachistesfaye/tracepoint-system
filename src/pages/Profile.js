@@ -24,13 +24,13 @@ const Profile = () => {
     } catch { toast.error("Update failed."); }
   };
 
-  const inputClass = `w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all`;
-  const disabledClass = `w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-400 cursor-not-allowed`;
+  const inputClass = "w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all";
+  const disabledClass = "w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-400 cursor-not-allowed";
 
   return (
     <div className="max-w-xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="bg-blue-50 text-blue-600 p-3 rounded-2xl"><User size={22} /></div>
+        <div className="bg-primary-50 text-primary-600 p-3 rounded-2xl"><User size={22} /></div>
         <div>
           <h1 className="text-2xl font-black text-gray-900">My Profile</h1>
           <p className="text-sm text-gray-500">Manage your account information</p>
@@ -39,14 +39,14 @@ const Profile = () => {
 
       <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
         <div className="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-2xl font-black text-white">
+          <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center text-2xl font-black text-white">
             {userProfile?.name?.[0]?.toUpperCase() || "U"}
           </div>
           <div>
             <p className="font-black text-gray-900 text-xl">{userProfile?.name}</p>
             <p className="text-sm text-gray-500">{userProfile?.email}</p>
             <span className={`text-xs font-bold px-2.5 py-1 rounded-full mt-1.5 inline-block ${
-              userProfile?.role === "admin" ? "bg-blue-50 text-blue-600" : "bg-gray-100 text-gray-500"
+              userProfile?.role === "admin" ? "bg-purple-50 text-purple-600" : "bg-primary-50 text-primary-600"
             }`}>{userProfile?.role}</span>
           </div>
         </div>
@@ -72,7 +72,7 @@ const Profile = () => {
                   Cancel
                 </button>
                 <button type="submit" disabled={isSubmitting}
-                  className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all disabled:opacity-50">
+                  className="flex-1 flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl transition-all disabled:opacity-50">
                   {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save Changes
                 </button>
               </>

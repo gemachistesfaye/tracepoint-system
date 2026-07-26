@@ -50,7 +50,7 @@ export const CAMPUS_LOCATIONS = {
 const ZONES = {
   main: {
     label: "Main Campus",
-    color: "#2563eb",
+    color: "#2E7D32",
     keys: ["Main University Gate","Administration Building","Main Library","Student Cafeteria",
            "College of Computing","College of Agriculture","Health Center","Post Office",
            "Parking Area","Dormitory Area","University Stadium","University Academy",
@@ -205,7 +205,7 @@ const CampusMap = ({
       const icon = L.divIcon({
         className: "",
         html: `<div style="
-          background:${cnt.lost > cnt.found ? "#ef4444" : "#10b981"};
+          background:${cnt.lost > cnt.found ? "#ef4444" : "#2E7D32"};
           color:white;font-size:9px;font-weight:800;
           width:18px;height:18px;border-radius:50%;
           display:flex;align-items:center;justify-content:center;
@@ -235,7 +235,7 @@ const CampusMap = ({
         className: "",
         html: `<div style="
           width:11px;height:11px;
-          background:${item.type === "lost" ? "#ef4444" : "#10b981"};
+          background:${item.type === "lost" ? "#ef4444" : "#2E7D32"};
           border:2px solid white;border-radius:50%;
           box-shadow:0 2px 6px rgba(0,0,0,0.3);
           opacity:${item.status === "resolved" ? 0.4 : 1};
@@ -248,8 +248,8 @@ const CampusMap = ({
         .bindPopup(`
           <div style="min-width:170px;font-family:system-ui,sans-serif">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-              <span style="font-size:10px;font-weight:800;color:${item.type==="lost"?"#dc2626":"#059669"};
-                background:${item.type==="lost"?"#fee2e2":"#d1fae5"};padding:2px 8px;border-radius:20px">
+              <span style="font-size:10px;font-weight:800;color:${item.type==="lost"?"#dc2626":"#2E7D32"};
+                background:${item.type==="lost"?"#fee2e2":"#E8F5E9"};padding:2px 8px;border-radius:20px">
                 ${item.type.toUpperCase()}
               </span>
               <span style="font-size:10px;color:#6b7280;text-transform:capitalize">${item.status}</span>
@@ -257,7 +257,7 @@ const CampusMap = ({
             <p style="font-weight:700;font-size:13px;margin:0 0 4px;color:#111827">${item.title}</p>
             <p style="font-size:11px;color:#6b7280;margin:0 0 2px">📂 ${item.category}</p>
             <p style="font-size:11px;color:#6b7280;margin:0 0 6px">📍 ${item.location}</p>
-            <a href="/items/${item.id}" style="font-size:11px;color:#2563eb;font-weight:600">View Details →</a>
+            <a href="/items/${item.id}" style="font-size:11px;color:#2E7D32;font-weight:600">View Details →</a>
           </div>`, { className: "tp-popup-light" });
 
       itemMarkersRef.current.push(m);
@@ -294,7 +294,7 @@ const CampusMap = ({
             ].map(f => (
               <button key={f.key} onClick={() => setFilterType(f.key)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  filterType === f.key ? "bg-blue-600 text-white" : "text-gray-500 hover:text-gray-700 hover:bg-white"
+                  filterType === f.key ? "bg-primary-600 text-white" : "text-gray-500 hover:text-gray-700 hover:bg-white"
                 }`}>{f.label}</button>
             ))}
           </div>
@@ -330,8 +330,8 @@ const CampusMap = ({
           {/* Legend */}
           <div className="ml-auto flex items-center gap-3 text-xs text-gray-500">
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-red-500 rounded-full"/>Lost item</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-emerald-500 rounded-full"/>Found item</span>
-            <span className="flex items-center gap-1 text-blue-600"><span className="font-black">3</span> Count badge</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full" style={{background:"#2E7D32"}}/>Found item</span>
+            <span className="flex items-center gap-1 text-primary-600"><span className="font-black">3</span> Count badge</span>
           </div>
         </div>
       )}
@@ -358,7 +358,7 @@ const CampusMap = ({
           .leaflet-control-layers{background:white!important;border:1px solid #e2e8f0!important;border-radius:10px!important;color:#374151!important;box-shadow:0 4px 16px rgba(0,0,0,0.1)!important;font-size:12px!important;}
           .leaflet-control-layers label{color:#374151!important;}
           .leaflet-control-attribution{background:rgba(255,255,255,0.8)!important;color:#9ca3af!important;font-size:9px!important;}
-          .leaflet-control-attribution a{color:#2563eb!important;}
+          .leaflet-control-attribution a{color:#2E7D32!important;}
         `}</style>
       </div>
 

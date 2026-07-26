@@ -7,7 +7,7 @@ const ItemCard = ({ item }) => {
   const isLost = item.type === "lost";
   return (
     <Link to={`/items/${item.id}`}
-      className="block bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-blue-300 hover:shadow-md transition-all duration-200 group">
+      className="block bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-primary-300 hover:shadow-md transition-all duration-200 group">
       <div className="relative h-44 bg-gray-100 overflow-hidden">
         {item.imageUrl ? (
           <img src={item.imageUrl} alt={item.title}

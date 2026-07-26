@@ -17,7 +17,7 @@ const Search = () => {
   if (location) results = results.filter(i => i.location === location);
 
   const hasFilters = query || type || category || location;
-  const selectClass = "bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all";
+  const selectClass = "bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all";
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -31,7 +31,7 @@ const Search = () => {
           <SearchIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
           <input type="text" value={query} onChange={e => setQuery(e.target.value)}
             placeholder="Search by title, description, category, location..."
-            className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+            className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <select value={type} onChange={e => setType(e.target.value)} className={selectClass}>

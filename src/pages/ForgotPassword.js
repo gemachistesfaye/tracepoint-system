@@ -22,12 +22,14 @@ const ForgotPassword = () => {
           <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-600 text-white rounded-2xl mb-4 shadow-lg shadow-primary-600/30">
             <MapPin size={26} />
           </div>
-          <h1 className="text-2xl font-black text-gray-900">TracePoint</h1>
+          <h1 className="text-2xl font-black text-gray-900">HU Lost & Found</h1>
         </div>
         <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
           {sent ? (
             <div className="text-center">
-              <div className="text-5xl mb-4">📧</div>
+              <div className="w-16 h-16 bg-primary-50 text-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
               <h2 className="text-xl font-bold text-gray-900 mb-2">Check your email</h2>
               <p className="text-sm text-gray-500 mb-6">We've sent a password reset link to your inbox.</p>
               <Link to="/login" className="text-primary-600 font-medium text-sm hover:text-primary-700 flex items-center justify-center gap-1">

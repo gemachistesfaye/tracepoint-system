@@ -15,7 +15,7 @@ const Register = () => {
   const onSubmit = async (data) => {
     try {
       await registerUser(data);
-      toast.success("Account created! Welcome to TracePoint.");
+      toast.success("Account created! Welcome to HU Lost & Found.");
       navigate("/home");
     } catch (err) {
       if (err.code === "auth/email-already-in-use") toast.error("Email already in use. Please sign in.");
@@ -41,7 +41,7 @@ const Register = () => {
           <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-600 text-white rounded-2xl mb-4 shadow-lg shadow-primary-600/30">
             <MapPin size={26} />
           </div>
-          <h1 className="text-2xl font-black text-gray-900">TracePoint</h1>
+          <h1 className="text-2xl font-black text-gray-900">HU Lost & Found</h1>
           <p className="text-sm text-gray-500 mt-1">Haramaya University Lost & Found</p>
         </div>
 
@@ -55,7 +55,7 @@ const Register = () => {
               {errors.name && <p className={errorClass}>{errors.name.message}</p>}
             </div>
             <div>
-              <label htmlFor="reg-email" className={labelClass}>Email Address *</label>
+              <label htmlFor="reg-email" className={labelClass}>University Email *</label>
               <input id="reg-email" type="email" placeholder="you@haramaya.edu.et" className={inputClass}
                 {...register("email", { required: "Email is required" })} />
               {errors.email && <p className={errorClass}>{errors.email.message}</p>}

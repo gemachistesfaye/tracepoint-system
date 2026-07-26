@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, lazy, Suspense } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import {
@@ -6,16 +6,15 @@ import {
   updateClaim, updateItem, deleteItem, updateUserRole, addNotification,
 } from "../firebase/firestore";
 import AnalyticsDashboard from "../components/analytics/AnalyticsDashboard";
-import { formatDate, timeAgo, STATUS_LABELS } from "../utils/helpers";
+import { formatDate, timeAgo } from "../utils/helpers";
 import toast from "react-hot-toast";
 import {
   Users, Package, FileText, CheckCircle, XCircle,
   Trash2, Shield, ShieldOff, Loader2, Eye,
-  Clock, AlertCircle, Search, Download, Filter,
-  X, MapPin, Image, ChevronDown, CheckSquare,
-  Calendar, TrendingUp, BarChart3,
+  Clock, AlertCircle, Search, Download,
+  X, MapPin, Image, CheckSquare,
+  TrendingUp, BarChart3,
 } from "lucide-react";
-import { lazy, Suspense } from "react";
 
 const CampusMap = lazy(() => import("../components/map/CampusMap"));
 
@@ -49,7 +48,6 @@ const AdminDashboard = () => {
 
   const [selectedClaim, setSelectedClaim] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [showMapView, setShowMapView] = useState(false);
 
   useEffect(() => { setTab(getTab()); }, [location.pathname]);
 
@@ -74,11 +72,11 @@ const AdminDashboard = () => {
       if (action === "approved") {
         await updateItem(claim.itemId, { status: "resolved" });
         await addNotification(claim.claimantId,
-          `✅ Your claim for "${claim.itemTitle}" has been approved! Contact the reporter to collect it.`, "success");
+          `Your claim for "${claim.itemTitle}" has been approved! Contact the reporter to collect it.`, "success");
       } else {
         await updateItem(claim.itemId, { status: "open" });
         await addNotification(claim.claimantId,
-          `❌ Your claim for "${claim.itemTitle}" was rejected. Please contact admin for details.`, "error");
+          `Your claim for "${claim.itemTitle}" was rejected. Please contact admin for details.`, "error");
       }
       toast.success(`Claim ${action}`);
       setSelectedClaim(null);
@@ -123,7 +121,7 @@ const AdminDashboard = () => {
     const newRole = user.role === "admin" ? "user" : "admin";
     if (!window.confirm(`Change ${user.name} to ${newRole}?`)) return;
     setProcessingId(user.id);
-    try { await updateUserRole(user.id, newRole); toast.success(`${user.name} → ${newRole}`); await load(); }
+    try { await updateUserRole(user.id, newRole); toast.success(`${user.name} -> ${newRole}`); await load(); }
     catch { toast.error("Failed"); }
     setProcessingId(null);
   };
@@ -142,7 +140,7 @@ const AdminDashboard = () => {
       Location: i.location, Status: i.status,
       Reporter: i.reporterName, Contact: i.reporterContact,
       Date: formatDate(i.createdAt),
-    })), "tracepoint-items"
+    })), "hu-lost-found-items"
   );
 
   const exportClaims = () => exportToExcel(
@@ -151,14 +149,14 @@ const AdminDashboard = () => {
       Email: c.claimantEmail, Phone: c.claimantPhone,
       Status: c.status, Proof: c.proof,
       Date: formatDate(c.createdAt),
-    })), "tracepoint-claims"
+    })), "hu-lost-found-claims"
   );
 
   const exportUsers = () => exportToExcel(
     filteredUsers.map(u => ({
       Name: u.name, Email: u.email,
       StudentID: u.studentId, Phone: u.phone, Role: u.role,
-    })), "tracepoint-users"
+    })), "hu-lost-found-users"
   );
 
   const inDateRange = (item) => {
@@ -198,7 +196,7 @@ const AdminDashboard = () => {
 
   const avgResolutionDays = (() => {
     const res = items.filter(i => i.status === "resolved" && i.createdAt && i.updatedAt);
-    if (!res.length) return "—";
+    if (!res.length) return "\u2014";
     const avg = res.reduce((sum, i) => {
       const c = i.createdAt?.toDate ? i.createdAt.toDate() : new Date(i.createdAt);
       const u = i.updatedAt?.toDate ? i.updatedAt.toDate() : new Date(i.updatedAt);
@@ -209,8 +207,8 @@ const AdminDashboard = () => {
 
   const th = "px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider text-left bg-gray-50 border-b border-gray-200";
   const td = "px-4 py-3.5 text-sm";
-  const inputClass = "bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all";
-  const selectClass = "bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500";
+  const inputClass = "bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all";
+  const selectClass = "bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -218,17 +216,17 @@ const AdminDashboard = () => {
 
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <div className="bg-purple-50 text-purple-600 p-3 rounded-2xl border border-purple-200">
+            <div className="bg-primary-50 text-primary-600 p-3 rounded-2xl border border-primary-200">
               <Shield size={24} />
             </div>
             <div>
               <h1 className="text-2xl font-black text-gray-900">Admin Control Panel</h1>
-              <p className="text-sm text-gray-500 mt-0.5">TracePoint · Haramaya University</p>
+              <p className="text-sm text-gray-500 mt-0.5">HU Lost & Found &middot; Haramaya University</p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-2 bg-purple-50 border border-purple-200 px-4 py-2 rounded-xl">
-            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
-            <span className="text-xs font-bold text-purple-600">Admin Session Active</span>
+          <div className="hidden sm:flex items-center gap-2 bg-primary-50 border border-primary-200 px-4 py-2 rounded-xl">
+            <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
+            <span className="text-xs font-bold text-primary-600">Admin Session Active</span>
           </div>
         </div>
 
@@ -236,14 +234,14 @@ const AdminDashboard = () => {
           {[
             { label: "Total Users", value: users.length, sub: `${admins.length} admins`, icon: <Users size={16} />, color: "blue" },
             { label: "Pending Claims", value: pendingClaims.length, sub: "need review", icon: <AlertCircle size={16} />, color: pendingClaims.length > 0 ? "yellow" : "slate", urgent: pendingClaims.length > 0 },
-            { label: "Total Items", value: items.length, sub: `${items.filter(i=>i.type==="lost").length}L · ${items.filter(i=>i.type==="found").length}F`, icon: <Package size={16} />, color: "purple" },
+            { label: "Total Items", value: items.length, sub: `${items.filter(i=>i.type==="lost").length}L \u00b7 ${items.filter(i=>i.type==="found").length}F`, icon: <Package size={16} />, color: "green" },
             { label: "Resolved", value: resolved.length, sub: `${items.length ? Math.round(resolved.length/items.length*100) : 0}% rate`, icon: <CheckCircle size={16} />, color: "emerald" },
             { label: "Avg Resolution", value: avgResolutionDays, sub: "per item", icon: <Clock size={16} />, color: "cyan" },
           ].map(s => (
             <div key={s.label} className={`bg-white border rounded-2xl p-4 shadow-sm ${s.urgent ? "border-amber-300 bg-amber-50" : "border-gray-200"}`}>
               <div className={`inline-flex p-2 rounded-xl mb-2 text-xs ${
                 s.color==="blue"?"bg-blue-50 text-blue-600":s.color==="yellow"?"bg-amber-50 text-amber-600":
-                s.color==="purple"?"bg-purple-50 text-purple-600":s.color==="emerald"?"bg-emerald-50 text-emerald-600":
+                s.color==="green"?"bg-primary-50 text-primary-600":s.color==="emerald"?"bg-emerald-50 text-emerald-600":
                 s.color==="cyan"?"bg-cyan-50 text-cyan-600":"bg-gray-100 text-gray-500"
               }`}>{s.icon}</div>
               <p className="text-2xl font-black text-gray-900">{s.value}</p>
@@ -263,7 +261,7 @@ const AdminDashboard = () => {
           ].map(t => (
             <button key={t.key} onClick={() => switchTab(t.key)}
               className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                tab===t.key ? "bg-purple-600 text-white shadow-lg shadow-purple-600/20" : "text-gray-500 hover:text-gray-700 hover:bg-white"
+                tab===t.key ? "bg-primary-600 text-white shadow-lg shadow-primary-600/20" : "text-gray-500 hover:text-gray-700 hover:bg-white"
               }`}>
               {t.icon}{t.label}
               {t.badge > 0 && (
@@ -277,7 +275,7 @@ const AdminDashboard = () => {
 
         {loading ? (
           <div className="flex items-center justify-center py-24">
-            <Loader2 size={32} className="animate-spin text-purple-500" />
+            <Loader2 size={32} className="animate-spin text-primary-500" />
           </div>
         ) : (
           <>
@@ -294,7 +292,7 @@ const AdminDashboard = () => {
                     </div>
                     <button onClick={() => switchTab("claims")}
                       className="text-xs font-bold bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-200 px-4 py-2 rounded-xl transition-colors">
-                      Review Now →
+                      Review Now &rarr;
                     </button>
                   </div>
                 )}
@@ -302,7 +300,7 @@ const AdminDashboard = () => {
                 <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <MapPin size={16} className="text-purple-500" />
+                      <MapPin size={16} className="text-primary-500" />
                       <h3 className="font-bold text-gray-900 text-sm">Campus Item Map</h3>
                       <span className="text-xs text-gray-400">{items.filter(i=>i.status==="open").length} active reports</span>
                     </div>
@@ -339,7 +337,7 @@ const AdminDashboard = () => {
                         </span>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900 truncate">{item.title}</p>
-                          <p className="text-xs text-gray-400">{item.location} · {item.reporterName}</p>
+                          <p className="text-xs text-gray-400">{item.location} &middot; {item.reporterName}</p>
                         </div>
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
                           item.status==="open"?"bg-emerald-50 text-emerald-600":item.status==="claimed"?"bg-amber-50 text-amber-600":"bg-gray-100 text-gray-500"
@@ -573,7 +571,7 @@ const AdminDashboard = () => {
                   <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
                     <Users size={15} className="text-gray-400"/>
                     <h3 className="font-bold text-gray-900 text-sm">User Management</h3>
-                    <span className="text-xs text-gray-400 ml-auto">{filteredUsers.length} users · {admins.length} admins</span>
+                    <span className="text-xs text-gray-400 ml-auto">{filteredUsers.length} users &middot; {admins.length} admins</span>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full">
@@ -592,7 +590,7 @@ const AdminDashboard = () => {
                               <td className={td}>
                                 <div className="flex items-center gap-3">
                                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 ${
-                                    user.role==="admin"?"bg-gradient-to-br from-purple-500 to-indigo-600":"bg-gradient-to-br from-gray-400 to-gray-500"
+                                    user.role==="admin"?"bg-gradient-to-br from-purple-500 to-indigo-600":"bg-gradient-to-br from-primary-400 to-primary-600"
                                   }`}>{user.name?.[0]?.toUpperCase()||"?"}</div>
                                   <div>
                                     <p className="text-sm font-semibold text-gray-900">{user.name}</p>
@@ -600,20 +598,20 @@ const AdminDashboard = () => {
                                   </div>
                                 </div>
                               </td>
-                              <td className={`${td} text-gray-500`}>{user.studentId||"—"}</td>
-                              <td className={`${td} text-gray-500`}>{user.phone||"—"}</td>
+                              <td className={`${td} text-gray-500`}>{user.studentId||"\u2014"}</td>
+                              <td className={`${td} text-gray-500`}>{user.phone||"\u2014"}</td>
                               <td className={td}>
                                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-lg">{userItems} reports</span>
                               </td>
                               <td className={td}>
                                 <span className={`text-xs font-bold px-2.5 py-1.5 rounded-full ${
                                   user.role==="admin"?"bg-purple-50 text-purple-600 border border-purple-200":"bg-gray-100 text-gray-500 border border-gray-200"
-                                }`}>{user.role==="admin"?"⚡ Admin":"Student"}</span>
+                                }`}>{user.role==="admin"?"Admin":"Student"}</span>
                               </td>
                               <td className={td}>
                                 <button onClick={()=>toggleRole(user)} disabled={processingId===user.id}
                                   className={`flex items-center gap-1.5 text-xs border px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-semibold ${
-                                    user.role==="admin"?"border-red-200 text-red-500 hover:bg-red-50":"border-purple-200 text-purple-600 hover:bg-purple-50"
+                                    user.role==="admin"?"border-red-200 text-red-500 hover:bg-red-50":"border-primary-200 text-primary-600 hover:bg-primary-50"
                                   }`}>
                                   {processingId===user.id?<Loader2 size={11} className="animate-spin"/>:user.role==="admin"?<ShieldOff size={11}/>:<Shield size={11}/>}
                                   {user.role==="admin"?"Remove Admin":"Make Admin"}
@@ -653,7 +651,7 @@ const AdminDashboard = () => {
                 ].map(f=>(
                   <div key={f.label} className="bg-gray-50 border border-gray-200 rounded-xl p-3">
                     <p className="text-xs text-gray-400 uppercase tracking-wide">{f.label}</p>
-                    <p className="text-sm font-semibold text-gray-900 mt-0.5 capitalize">{f.value||"—"}</p>
+                    <p className="text-sm font-semibold text-gray-900 mt-0.5 capitalize">{f.value||"\u2014"}</p>
                   </div>
                 ))}
               </div>

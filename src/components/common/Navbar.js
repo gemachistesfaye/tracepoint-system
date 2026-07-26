@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import NotificationBell from "./NotificationBell";
-import InstallButton from "./InstallButton";
 import LogoutDialog from "./LogoutDialog";
 import {
   MapPin, Menu, X, User,
@@ -65,13 +64,13 @@ const Navbar = () => {
 
             <Link to={isAdmin ? "/admin" : currentUser ? "/home" : "/"} className="flex items-center gap-2.5 group">
               <div className={`text-white rounded-xl p-1.5 transition-all shadow-lg group-hover:-translate-y-0.5 ${
-                isAdmin ? "bg-purple-600 shadow-purple-600/20" : "bg-blue-600 shadow-blue-600/20"
+                isAdmin ? "bg-purple-600 shadow-purple-600/20" : "bg-primary-600 shadow-primary-600/20"
               }`}>
                 <MapPin size={18} />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-black text-gray-900 text-lg tracking-tight">TracePoint</span>
+                  <span className="font-black text-gray-900 text-lg tracking-tight">HU Lost & Found</span>
                   {isAdmin && (
                     <span className="text-xs font-bold bg-purple-50 text-purple-600 border border-purple-200 px-2 py-0.5 rounded-full">
                       Admin
@@ -91,7 +90,7 @@ const Navbar = () => {
                   <Link key={link.to} to={link.to}
                     className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${
                       active
-                        ? isAdmin ? "bg-purple-50 text-purple-600" : "bg-blue-50 text-blue-600"
+                        ? isAdmin ? "bg-purple-50 text-purple-600" : "bg-primary-50 text-primary-600"
                         : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                     }`}>
                     {link.icon} {link.label}
@@ -112,7 +111,7 @@ const Navbar = () => {
                     </Link>
                   ) : (
                     <Link to="/report"
-                      className="hidden sm:inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-blue-600/20">
+                      className="hidden sm:inline-flex items-center gap-1.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-primary-600/20">
                       <PlusCircle size={15} /> Report
                     </Link>
                   )}
@@ -121,7 +120,7 @@ const Navbar = () => {
                     <button onClick={() => setUserMenuOpen(!userMenuOpen)}
                       className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 px-3 py-2 rounded-xl transition-colors">
                       <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-xs ${
-                        isAdmin ? "bg-gradient-to-br from-purple-500 to-indigo-600" : "bg-gradient-to-br from-blue-500 to-indigo-600"
+                        isAdmin ? "bg-gradient-to-br from-purple-500 to-indigo-600" : "bg-gradient-to-br from-primary-500 to-primary-700"
                       }`}>
                         {userProfile?.name?.[0]?.toUpperCase() || "U"}
                       </div>
@@ -135,10 +134,10 @@ const Navbar = () => {
                       <>
                         <div className="fixed inset-0 z-30" onClick={() => setUserMenuOpen(false)} />
                         <div className="absolute right-0 mt-2 w-60 bg-white border border-gray-200 rounded-2xl shadow-2xl z-40 overflow-hidden">
-                          <div className={`p-4 border-b border-gray-100 ${isAdmin ? "bg-purple-50" : "bg-blue-50"}`}>
+                          <div className={`p-4 border-b border-gray-100 ${isAdmin ? "bg-purple-50" : "bg-primary-50"}`}>
                             <div className="flex items-center gap-3">
                               <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm ${
-                                isAdmin ? "bg-gradient-to-br from-purple-500 to-indigo-600" : "bg-gradient-to-br from-blue-500 to-indigo-600"
+                                isAdmin ? "bg-gradient-to-br from-purple-500 to-indigo-600" : "bg-gradient-to-br from-primary-500 to-primary-700"
                               }`}>
                                 {userProfile?.name?.[0]?.toUpperCase()}
                               </div>
@@ -146,8 +145,8 @@ const Navbar = () => {
                                 <p className="font-bold text-sm text-gray-900 truncate">{userProfile?.name}</p>
                                 <p className="text-xs text-gray-500 truncate">{userProfile?.email}</p>
                                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full mt-1 inline-block ${
-                                  isAdmin ? "bg-purple-100 text-purple-600" : "bg-blue-100 text-blue-600"
-                                }`}>{isAdmin ? "⚡ Admin" : "Student"}</span>
+                                  isAdmin ? "bg-purple-100 text-purple-600" : "bg-primary-100 text-primary-600"
+                                }`}>{isAdmin ? "Admin" : "Student"}</span>
                               </div>
                             </div>
                           </div>
@@ -173,7 +172,7 @@ const Navbar = () => {
                               ))
                             )}
                             <div className="border-t border-gray-100 pt-1 mt-1">
-                              <Link to="/profile" onClick={() => setUserMenuOpen(false)}
+                              <Link to="/settings" onClick={() => setUserMenuOpen(false)}
                                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                                 <Settings size={14} className="text-gray-400" /> Account Settings
                               </Link>
@@ -191,7 +190,7 @@ const Navbar = () => {
               ) : (
                 <div className="flex items-center gap-2">
                   <Link to="/login" className="text-sm font-medium text-gray-500 hover:text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-50 transition-all hidden sm:block">Sign In</Link>
-                  <Link to="/register" className="text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-blue-600/20">Get Started</Link>
+                  <Link to="/register" className="text-sm font-bold bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-primary-600/20">Get Started</Link>
                 </div>
               )}
 
@@ -211,7 +210,7 @@ const Navbar = () => {
                 <Link key={link.to} to={link.to}
                   className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                     active
-                      ? isAdmin ? "bg-purple-50 text-purple-600" : "bg-blue-50 text-blue-600"
+                      ? isAdmin ? "bg-purple-50 text-purple-600" : "bg-primary-50 text-primary-600"
                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                   }`}>
                   {link.icon} {link.label}
@@ -224,7 +223,7 @@ const Navbar = () => {
                   <FileText size={16} /> Review Claims
                 </Link>
               ) : (
-                <Link to="/report" className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-blue-600 hover:bg-blue-50 transition-colors">
+                <Link to="/report" className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-primary-600 hover:bg-primary-50 transition-colors">
                   <PlusCircle size={16} /> Report Item
                 </Link>
               )}
