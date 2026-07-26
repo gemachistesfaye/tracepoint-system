@@ -28,17 +28,13 @@ const InstallButton = () => {
 
   const handleClick = async () => {
     if (deferredPrompt) {
-      // Native Chrome/Android install prompt available
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === "accepted") setVisible(false);
       setDeferredPrompt(null);
     } else if (isMobile) {
-      // Mobile without native prompt — show instructions
       setShowModal(true);
     } else {
-      // Desktop — Chrome will show native prompt after SW is active
-      // Show a small tooltip instead of full modal
       setShowModal(true);
     }
   };
@@ -48,22 +44,19 @@ const InstallButton = () => {
   return (
     <>
       <button onClick={handleClick} title="Install TracePoint App"
-        className="flex items-center gap-1.5 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 rounded-xl transition-all text-sm font-medium">
+        className="flex items-center gap-1.5 text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200 px-3 py-2 rounded-xl transition-all text-sm font-medium">
         <Download size={15} />
         <span className="hidden sm:block">Install</span>
       </button>
 
-      {/* Styled install instructions modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[999] flex items-end sm:items-center justify-center p-4 sm:p-6">
-          <div className="bg-[#0f1629] border border-white/10 rounded-3xl w-full max-w-sm shadow-2xl p-5">
-            {/* Close */}
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[999] flex items-end sm:items-center justify-center p-4 sm:p-6">
+          <div className="bg-white border border-gray-200 rounded-3xl w-full max-w-sm shadow-2xl p-5">
             <button onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors">
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
               <X size={18} />
             </button>
 
-            {/* App info */}
             <div className="flex items-center gap-4 mb-5">
               <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/30 shrink-0">
                 <svg viewBox="0 0 32 32" width="34" height="34">
@@ -72,47 +65,46 @@ const InstallButton = () => {
                 </svg>
               </div>
               <div>
-                <p className="font-black text-white text-lg leading-tight">Install TracePoint</p>
-                <p className="text-sm text-slate-400 mt-0.5">Quick access on your device</p>
+                <p className="font-black text-gray-900 text-lg leading-tight">Install TracePoint</p>
+                <p className="text-sm text-gray-500 mt-0.5">Quick access on your device</p>
               </div>
             </div>
 
-            <p className="text-sm text-slate-300 leading-relaxed mb-5">
+            <p className="text-sm text-gray-600 leading-relaxed mb-5">
               Install our app for faster access, offline support, and a native experience.
             </p>
 
-            {/* Instructions */}
             <div className="space-y-3 mb-5">
               {isMobile ? (
                 <>
-                  <div className="flex items-start gap-3 bg-white/5 border border-white/8 rounded-2xl p-3.5">
-                    <div className="w-8 h-8 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center shrink-0 text-sm font-black">1</div>
+                  <div className="flex items-start gap-3 bg-gray-50 border border-gray-200 rounded-2xl p-3.5">
+                    <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0 text-sm font-black">1</div>
                     <div>
-                      <p className="text-sm font-bold text-white">Chrome / Android</p>
-                      <p className="text-xs text-slate-400 mt-0.5">Tap menu <span className="text-blue-400 font-bold">⋮</span> → <span className="text-blue-400">"Add to Home Screen"</span></p>
+                      <p className="text-sm font-bold text-gray-900">Chrome / Android</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Tap menu <span className="text-blue-600 font-bold">⋮</span> → <span className="text-blue-600">"Add to Home Screen"</span></p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 bg-white/5 border border-white/8 rounded-2xl p-3.5">
-                    <div className="w-8 h-8 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center shrink-0 text-sm font-black">2</div>
+                  <div className="flex items-start gap-3 bg-gray-50 border border-gray-200 rounded-2xl p-3.5">
+                    <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0 text-sm font-black">2</div>
                     <div>
-                      <p className="text-sm font-bold text-white">Safari / iPhone</p>
-                      <p className="text-xs text-slate-400 mt-0.5">Tap Share <span className="text-blue-400 font-bold">⎙</span> → <span className="text-blue-400">"Add to Home Screen"</span></p>
+                      <p className="text-sm font-bold text-gray-900">Safari / iPhone</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Tap Share <span className="text-blue-600 font-bold">⎙</span> → <span className="text-blue-600">"Add to Home Screen"</span></p>
                     </div>
                   </div>
                 </>
               ) : (
-                <div className="flex items-start gap-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3.5">
-                  <div className="w-8 h-8 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center shrink-0 text-lg">💡</div>
+                <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-2xl p-3.5">
+                  <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0 text-lg">💡</div>
                   <div>
-                    <p className="text-sm font-bold text-white">Almost ready!</p>
-                    <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">Look for the <span className="text-blue-400 font-bold">install icon ⊕</span> in your Chrome address bar, or come back in a moment and click Install again.</p>
+                    <p className="text-sm font-bold text-gray-900">Almost ready!</p>
+                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">Look for the <span className="text-blue-600 font-bold">install icon ⊕</span> in your Chrome address bar, or come back in a moment and click Install again.</p>
                   </div>
                 </div>
               )}
             </div>
 
             <button onClick={() => setShowModal(false)}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-2xl transition-all text-sm shadow-lg shadow-blue-600/20">
+              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl transition-all text-sm shadow-lg shadow-blue-600/20">
               <Download size={15} /> Got it
             </button>
           </div>

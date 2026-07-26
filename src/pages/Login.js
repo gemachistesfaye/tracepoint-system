@@ -23,67 +23,63 @@ const Login = () => {
     }
   };
 
-  const inputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all";
+  const inputClass = "w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all";
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] px-4 py-6">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:64px_64px]" />
-      <div className="absolute top-1/4 left-1/3 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Back to website — always visible top-left */}
+    <div className="min-h-screen bg-gray-50 px-4 py-6">
       <div className="relative max-w-md mx-auto">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white mb-8 transition-colors group">
+        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary-600 mb-8 transition-colors group">
           <ArrowLeft size={15} className="group-hover:-translate-x-1 transition-transform" />
           Back to website
         </Link>
       </div>
 
-      {/* Centered card */}
       <div className="relative flex flex-col items-center justify-center" style={{ minHeight: "calc(100vh - 80px)" }}>
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 text-white rounded-2xl mb-4 shadow-lg shadow-blue-600/30">
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-600 text-white rounded-2xl mb-4 shadow-lg shadow-primary-600/30">
               <MapPin size={26} />
             </div>
-            <h1 className="text-2xl font-black text-white">TracePoint</h1>
-            <p className="text-sm text-slate-500 mt-1">Haramaya University Lost & Found</p>
+            <h1 className="text-2xl font-black text-gray-900">TracePoint</h1>
+            <p className="text-sm text-gray-500 mt-1">Haramaya University Lost & Found</p>
           </div>
 
-          <div className="bg-white/3 border border-white/10 rounded-3xl p-8 backdrop-blur-sm">
-            <h2 className="text-xl font-bold text-white mb-6">Sign in to your account</h2>
+          <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Sign in to your account</h2>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1.5">Email</label>
-                <input type="email" placeholder="you@haramaya.edu.et" className={inputClass}
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                <input id="email" type="email" placeholder="you@haramaya.edu.et" className={inputClass}
                   {...register("email", { required: "Email is required" })} />
-                {errors.email && <p className="text-xs text-red-400 mt-1">{errors.email.message}</p>}
+                {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1.5">Password</label>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
                 <div className="relative">
-                  <input type={showPassword ? "text" : "password"} placeholder="••••••••"
+                  <input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••"
                     className={`${inputClass} pr-11`}
                     {...register("password", { required: "Password is required" })} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}>
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-                {errors.password && <p className="text-xs text-red-400 mt-1">{errors.password.message}</p>}
+                {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
               </div>
               <div className="flex justify-end">
-                <Link to="/forgot-password" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                <Link to="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700 transition-colors">
                   Forgot password?
                 </Link>
               </div>
               <button type="submit" disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all hover:-translate-y-0.5 disabled:opacity-50 shadow-lg shadow-blue-600/20">
+                className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl transition-all hover:-translate-y-0.5 disabled:opacity-50 shadow-lg shadow-primary-600/25">
                 {isSubmitting && <Loader2 size={16} className="animate-spin" />} Sign In
               </button>
             </form>
-            <p className="text-center text-sm text-slate-500 mt-6">
+            <p className="text-center text-sm text-gray-500 mt-6">
               Don't have an account?{" "}
-              <Link to="/register" className="text-blue-400 font-semibold hover:text-blue-300 transition-colors">
+              <Link to="/register" className="text-primary-600 font-semibold hover:text-primary-700 transition-colors">
                 Register here
               </Link>
             </p>
