@@ -6,7 +6,7 @@ import LogoutDialog from "./LogoutDialog";
 import {
   MapPin, Menu, X, User,
   PlusCircle, Search, ChevronDown, BarChart3,
-  Package, Home, TrendingUp, Users, FileText, Settings, LogOut,
+  Package, Home, TrendingUp, Users, FileText, Settings, LogOut, MessageSquare,
 } from "lucide-react";
 
 const Navbar = () => {
@@ -47,6 +47,7 @@ const Navbar = () => {
     { to: "/home", label: "Dashboard", icon: <Home size={14} /> },
     { to: "/items/lost", label: "Lost Items", icon: <Search size={14} /> },
     { to: "/items/found", label: "Found Items", icon: <Package size={14} /> },
+    { to: "/messages", label: "Messages", icon: <MessageSquare size={14} /> },
     { to: "/search", label: "Search", icon: <Search size={14} /> },
   ];
 
@@ -163,6 +164,7 @@ const Navbar = () => {
                                 { to: "/home", icon: <Home size={14} />, label: "Dashboard" },
                                 { to: "/profile", icon: <User size={14} />, label: "My Profile" },
                                 { to: "/my-items", icon: <Package size={14} />, label: "My Items & Claims" },
+                                { to: "/messages", icon: <MessageSquare size={14} />, label: "Messages" },
                                 { to: "/analytics", icon: <TrendingUp size={14} />, label: "Analytics" },
                               ].map(item => (
                                 <Link key={item.to} to={item.to} onClick={() => setUserMenuOpen(false)}

@@ -18,9 +18,11 @@ export const ItemsProvider = ({ children }) => {
 
   const lostItems = items.filter((i) => i.type === "lost");
   const foundItems = items.filter((i) => i.type === "found");
+  const openItems = items.filter((i) => i.status === "open");
+  const resolvedItems = items.filter((i) => i.status === "resolved");
 
   return (
-    <ItemsContext.Provider value={{ items, lostItems, foundItems, loading }}>
+    <ItemsContext.Provider value={{ items, lostItems, foundItems, openItems, resolvedItems, loading }}>
       {children}
     </ItemsContext.Provider>
   );

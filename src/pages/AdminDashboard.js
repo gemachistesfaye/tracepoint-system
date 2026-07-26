@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 const CampusMap = lazy(() => import("../components/map/CampusMap"));
+const AuditLog = lazy(() => import("../components/admin/AuditLog"));
 
 const AdminDashboard = () => {
   const location = useLocation();
@@ -61,7 +62,7 @@ const AdminDashboard = () => {
   const switchTab = (key) => {
     setTab(key);
     setSelectedIds([]);
-    const paths = { overview: "/admin", claims: "/admin/claims", items: "/admin/items", users: "/admin/users", analytics: "/analytics" };
+    const paths = { overview: "/admin", claims: "/admin/claims", items: "/admin/items", users: "/admin/users", audit: "/admin/audit", analytics: "/analytics" };
     navigate(paths[key] || "/admin");
   };
 
@@ -70,11 +71,11 @@ const AdminDashboard = () => {
     try {
       await updateClaim(claim.id, { status: action });
       if (action === "approved") {
-        await updateItem(claim.itemId, { status: "resolved" });
+        await updateItem(claim.itemId, { status: "resolved" }, claim.itemType);
         await addNotification(claim.claimantId,
           `Your claim for "${claim.itemTitle}" has been approved! Contact the reporter to collect it.`, "success");
       } else {
-        await updateItem(claim.itemId, { status: "open" });
+        await updateItem(claim.itemId, { status: "open" }, claim.itemType);
         await addNotification(claim.claimantId,
           `Your claim for "${claim.itemTitle}" was rejected. Please contact admin for details.`, "error");
       }
@@ -88,7 +89,7 @@ const AdminDashboard = () => {
   const handleDeleteItem = async (item) => {
     if (!window.confirm(`Delete "${item.title}"?`)) return;
     setProcessingId(item.id);
-    try { await deleteItem(item.id); toast.success("Deleted"); await load(); }
+    try { await deleteItem(item.id, item.type); toast.success("Deleted"); await load(); }
     catch { toast.error("Delete failed"); }
     setProcessingId(null);
   };
@@ -97,7 +98,8 @@ const AdminDashboard = () => {
     if (!window.confirm(`Delete ${selectedIds.length} items?`)) return;
     setProcessingId("bulk");
     try {
-      await Promise.all(selectedIds.map(id => deleteItem(id)));
+      const toDelete = items.filter(i => selectedIds.includes(i.id));
+      await Promise.all(toDelete.map(i => deleteItem(i.id, i.type)));
       toast.success(`${selectedIds.length} items deleted`);
       setSelectedIds([]);
       await load();
@@ -109,7 +111,8 @@ const AdminDashboard = () => {
     if (!window.confirm(`Mark ${selectedIds.length} items as resolved?`)) return;
     setProcessingId("bulk");
     try {
-      await Promise.all(selectedIds.map(id => updateItem(id, { status: "resolved" })));
+      const toResolve = items.filter(i => selectedIds.includes(i.id));
+      await Promise.all(toResolve.map(i => updateItem(i.id, { status: "resolved" }, i.type)));
       toast.success(`${selectedIds.length} items resolved`);
       setSelectedIds([]);
       await load();
@@ -257,6 +260,7 @@ const AdminDashboard = () => {
             { key:"claims", label:"Claims", icon:<FileText size={13}/>, badge: pendingClaims.length },
             { key:"items", label:"Items", icon:<Package size={13}/>, badge: items.length },
             { key:"users", label:"Users", icon:<Users size={13}/>, badge: users.length },
+            { key:"audit", label:"Audit Log", icon:<Clock size={13}/> },
             { key:"analytics", label:"Analytics", icon:<TrendingUp size={13}/> },
           ].map(t => (
             <button key={t.key} onClick={() => switchTab(t.key)}
@@ -628,6 +632,12 @@ const AdminDashboard = () => {
             )}
 
             {tab==="analytics" && <AnalyticsDashboard />}
+
+            {tab==="audit" && (
+              <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 size={24} className="animate-spin text-gray-400" /></div>}>
+                <AuditLog />
+              </Suspense>
+            )}
           </>
         )}
       </div>

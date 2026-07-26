@@ -1,67 +1,86 @@
 /**
- * Cloudinary image upload (no server needed — unsigned upload preset)
- * Free plan: 25GB storage, 25GB bandwidth/month
+ * Firebase Storage image upload
+ * Replaces Cloudinary — uses Firebase Storage directly
  */
 
-const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
-const UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
+import {
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+import { storage } from "./config";
 
 /**
- * Upload an image to Cloudinary
+ * Upload an image to Firebase Storage
  * @param {File} file - Image file
- * @param {string} folder - Cloudinary folder name
+ * @param {string} folder - Storage folder (e.g., "items", "claims/profiles")
  * @param {function} onProgress - Progress callback (0-100)
- * @returns {{ url, publicId }}
+ * @returns {{ url: string, path: string }}
  */
-export const uploadImage = (file, folder = "tracepoint/items", onProgress) => {
+export const uploadImage = (file, folder = "items", onProgress) => {
   return new Promise((resolve, reject) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", UPLOAD_PRESET);
-    formData.append("folder", folder);
+    const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+    const storageRef = ref(storage, `${folder}/${fileName}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
 
-    const xhr = new XMLHttpRequest();
-
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable && onProgress) {
-        onProgress(Math.round((e.loaded / e.total) * 100));
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress = Math.round(
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+        );
+        if (onProgress) onProgress(progress);
+      },
+      (error) => {
+        reject(new Error(`Upload failed: ${error.message}`));
+      },
+      async () => {
+        try {
+          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve({
+            url,
+            path: uploadTask.snapshot.ref.fullPath,
+          });
+        } catch (err) {
+          reject(new Error(`Failed to get download URL: ${err.message}`));
+        }
       }
-    });
-
-    xhr.addEventListener("load", () => {
-      if (xhr.status === 200) {
-        const data = JSON.parse(xhr.responseText);
-        resolve({
-          url: data.secure_url,
-          publicId: data.public_id,
-          // Keep 'path' alias so existing code stays compatible
-          path: data.public_id,
-        });
-      } else {
-        reject(new Error(`Upload failed: ${xhr.statusText}`));
-      }
-    });
-
-    xhr.addEventListener("error", () => reject(new Error("Upload error")));
-
-    xhr.open(
-      "POST",
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`
     );
-    xhr.send(formData);
   });
 };
 
 /**
- * Delete an image from Cloudinary
- * Note: Deletion from the frontend requires a signed request or a backend.
- * For simplicity we just log a warning — images can be managed in Cloudinary dashboard.
+ * Delete an image from Firebase Storage
+ * @param {string} path - Storage path or full URL
  */
-export const deleteImage = async (publicId) => {
-  // To enable deletion, set up a small backend endpoint or a Firebase Cloud Function
-  // that calls the Cloudinary Admin API with your API secret.
-  console.warn(
-    "Image deletion skipped (requires backend). Manage at cloudinary.com/console →",
-    publicId
-  );
+export const deleteImage = async (path) => {
+  try {
+    let storageRef;
+    if (path.startsWith("gs://") || path.startsWith("https://")) {
+      // It's a URL, we need the path
+      const urlPath = path.split("/o/")[1]?.split("?")[0];
+      if (urlPath) {
+        storageRef = ref(storage, decodeURIComponent(urlPath));
+      }
+    } else {
+      storageRef = ref(storage, path);
+    }
+    if (storageRef) {
+      await deleteObject(storageRef);
+    }
+  } catch (error) {
+    // Image may not exist or already deleted
+    console.warn("Image deletion skipped:", error.message);
+  }
+};
+
+/**
+ * Get download URL for a storage path
+ * @param {string} path - Storage path
+ * @returns {Promise<string>}
+ */
+export const getImageUrl = async (path) => {
+  const storageRef = ref(storage, path);
+  return getDownloadURL(storageRef);
 };

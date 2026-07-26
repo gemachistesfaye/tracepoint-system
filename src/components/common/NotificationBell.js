@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { subscribeToNotifications, markNotificationRead } from "../../firebase/firestore";
+import { requestNotificationPermission, onForegroundMessage } from "../../firebase/messaging";
 import { timeAgo } from "../../utils/helpers";
+import toast from "react-hot-toast";
 
 const NotificationBell = () => {
   const { currentUser } = useAuth();
@@ -11,7 +13,25 @@ const NotificationBell = () => {
 
   useEffect(() => {
     if (!currentUser) return;
-    return subscribeToNotifications(currentUser.uid, setNotifications);
+
+    // Request FCM permission
+    requestNotificationPermission();
+
+    // Subscribe to Firestore notifications
+    const unsub = subscribeToNotifications(currentUser.uid, setNotifications);
+
+    // Listen for foreground FCM messages
+    const unsubFcm = onForegroundMessage((payload) => {
+      toast(payload.notification?.body || "New notification", {
+        icon: "🔔",
+        duration: 5000,
+      });
+    });
+
+    return () => {
+      unsub();
+      unsubFcm();
+    };
   }, [currentUser]);
 
   const unread = notifications.filter(n => !n.read);
@@ -48,6 +68,7 @@ const NotificationBell = () => {
                 <div className="py-8 text-center text-sm text-gray-400">No notifications yet</div>
               ) : notifications.map(n => (
                 <div key={n.id} className={`px-4 py-3 text-sm ${!n.read ? "bg-blue-50" : ""} hover:bg-gray-50 transition-colors`}>
+                  {n.title && <p className="font-semibold text-gray-900 text-xs">{n.title}</p>}
                   <p className="text-gray-700">{n.message}</p>
                   <p className="text-xs text-gray-400 mt-1">{timeAgo(n.createdAt)}</p>
                 </div>

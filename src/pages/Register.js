@@ -72,6 +72,16 @@ const Register = () => {
                 {errors.phone && <p className={errorClass}>{errors.phone.message}</p>}
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="department" className={labelClass}>Department</label>
+                <input id="department" type="text" placeholder="e.g. Computer Science" className={inputClass} {...register("department")} />
+              </div>
+              <div>
+                <label htmlFor="college" className={labelClass}>College</label>
+                <input id="college" type="text" placeholder="e.g. College of Computing" className={inputClass} {...register("college")} />
+              </div>
+            </div>
             <div>
               <label htmlFor="reg-password" className={labelClass}>Password *</label>
               <div className="relative">

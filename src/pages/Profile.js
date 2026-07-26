@@ -11,7 +11,13 @@ const Profile = () => {
   const { currentUser, userProfile, fetchProfile } = useAuth();
   const [editing, setEditing] = useState(false);
   const { register, handleSubmit, formState: { isSubmitting } } = useForm({
-    defaultValues: { name: userProfile?.name || "", phone: userProfile?.phone || "", studentId: userProfile?.studentId || "" }
+    defaultValues: {
+      name: userProfile?.name || "",
+      phone: userProfile?.phone || "",
+      studentId: userProfile?.studentId || "",
+      department: userProfile?.department || "",
+      college: userProfile?.college || "",
+    }
   });
 
   const onSubmit = async (data) => {
@@ -52,7 +58,7 @@ const Profile = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {[{ name: "name", label: "Full Name" }, { name: "studentId", label: "Student ID" }, { name: "phone", label: "Phone Number" }].map(({ name, label }) => (
+          {[{ name: "name", label: "Full Name" }, { name: "studentId", label: "Student ID" }, { name: "phone", label: "Phone Number" }, { name: "department", label: "Department" }, { name: "college", label: "College" }].map(({ name, label }) => (
             <div key={name}>
               <label className="block text-sm font-medium text-gray-600 mb-1.5">{label}</label>
               <input type="text" disabled={!editing} className={editing ? inputClass : disabledClass} {...register(name)} />

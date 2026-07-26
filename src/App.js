@@ -22,6 +22,7 @@ import Settings from "./pages/Settings";
 import AdminDashboard from "./pages/AdminDashboard";
 import Analytics from "./pages/Analytics";
 import PWAInstallPrompt from "./components/common/PWAInstallPrompt";
+import Messages from "./pages/Messages";
 
 class ErrorBoundary extends React.Component {
   state = { hasError: false };
@@ -100,6 +101,7 @@ const App = () => (
             <Route path="/profile" element={<AppLayout><ProtectedRoute><Profile /></ProtectedRoute></AppLayout>} />
             <Route path="/settings" element={<AppLayout><ProtectedRoute><Settings /></ProtectedRoute></AppLayout>} />
             <Route path="/analytics" element={<AppLayout><ProtectedRoute><Analytics /></ProtectedRoute></AppLayout>} />
+            <Route path="/messages" element={<AppLayout><ProtectedRoute><Messages /></ProtectedRoute></AppLayout>} />
             <Route path="/admin" element={<AppLayout><AdminRoute><AdminDashboard /></AdminRoute></AppLayout>} />
             <Route path="/admin/items" element={<AppLayout><AdminRoute><AdminDashboard tab="items" /></AdminRoute></AppLayout>} />
             <Route path="/admin/claims" element={<AppLayout><AdminRoute><AdminDashboard tab="claims" /></AdminRoute></AppLayout>} />

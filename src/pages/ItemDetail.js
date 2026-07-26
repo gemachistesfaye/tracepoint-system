@@ -47,7 +47,7 @@ const ItemDetail = () => {
     setDeleting(true);
     try {
       if (item.imagePath) await deleteImage(item.imagePath);
-      await deleteItem(id);
+      await deleteItem(id, item.type);
       toast.success("Item deleted.");
       navigate(-1);
     } catch { toast.error("Could not delete."); setDeleting(false); }
@@ -56,7 +56,7 @@ const ItemDetail = () => {
   const handleResolve = async () => {
     setResolving(true);
     try {
-      await updateItem(id, { status: "resolved" });
+      await updateItem(id, { status: "resolved" }, item.type);
       await addNotification(item.reportedBy, `Your item "${item.title}" has been marked as resolved!`, "success");
       setItem(prev => ({ ...prev, status: "resolved" }));
       toast.success("Marked as resolved!");

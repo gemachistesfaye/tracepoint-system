@@ -11,11 +11,12 @@ const ClaimModal = ({ item, onClose }) => {
 
   const onSubmit = async (data) => {
     try {
-      await submitClaim({ itemId: item.id, itemTitle: item.title, claimantId: currentUser.uid,
+      await submitClaim({ itemId: item.id, itemTitle: item.title, itemType: item.type,
+        claimantId: currentUser.uid,
         claimantName: userProfile?.name || currentUser.displayName,
         claimantEmail: currentUser.email, claimantPhone: data.phone,
         proof: data.proof, additionalInfo: data.additionalInfo });
-      await updateItem(item.id, { status: "claimed" });
+      await updateItem(item.id, { status: "claimed" }, item.type);
       await addNotification(item.reportedBy, `Someone claimed your ${item.type} item: "${item.title}". Check your claims.`, "info");
       toast.success("Claim submitted! The reporter will be notified.");
       onClose();
