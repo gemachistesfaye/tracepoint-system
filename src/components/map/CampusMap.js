@@ -286,7 +286,7 @@ const CampusMap = ({
       {showFilter && (
         <div className="flex flex-wrap items-center gap-3">
           {/* Type filter */}
-          <div className="flex gap-1 bg-white/5 border border-white/10 p-1 rounded-xl">
+          <div className="flex gap-1 bg-gray-100 border border-gray-200 p-1 rounded-xl">
             {[
               { key: "all", label: `All (${items.filter(i=>i.status!=="resolved").length})` },
               { key: "lost", label: `🔴 Lost (${lostCount})` },
@@ -294,14 +294,14 @@ const CampusMap = ({
             ].map(f => (
               <button key={f.key} onClick={() => setFilterType(f.key)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  filterType === f.key ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"
+                  filterType === f.key ? "bg-blue-600 text-white" : "text-gray-500 hover:text-gray-700 hover:bg-white"
                 }`}>{f.label}</button>
             ))}
           </div>
           {/* Zone filter */}
-          <div className="flex gap-1 bg-white/5 border border-white/10 p-1 rounded-xl">
+          <div className="flex gap-1 bg-gray-100 border border-gray-200 p-1 rounded-xl">
             <button onClick={() => setActiveZone("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeZone==="all"?"bg-white/20 text-white":"text-slate-400 hover:text-white"}`}>
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeZone==="all"?"bg-white text-gray-900 shadow-sm":"text-gray-500 hover:text-gray-700 hover:bg-white"}`}>
               All Zones
             </button>
             {Object.entries(ZONES).map(([key, zone]) => (
@@ -320,7 +320,7 @@ const CampusMap = ({
                 }
               }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  activeZone===key ? "text-white" : "text-slate-400 hover:text-white"
+                  activeZone===key ? "text-white shadow-sm" : "text-gray-500 hover:text-gray-700 hover:bg-white"
                 }`}
                 style={activeZone===key ? { background: zone.color } : {}}>
                 {zone.label}
@@ -328,10 +328,10 @@ const CampusMap = ({
             ))}
           </div>
           {/* Legend */}
-          <div className="ml-auto flex items-center gap-3 text-xs text-slate-400">
+          <div className="ml-auto flex items-center gap-3 text-xs text-gray-500">
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-red-500 rounded-full"/>Lost item</span>
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-emerald-500 rounded-full"/>Found item</span>
-            <span className="flex items-center gap-1 text-blue-400"><span className="font-black">3</span> Count badge</span>
+            <span className="flex items-center gap-1 text-blue-600"><span className="font-black">3</span> Count badge</span>
           </div>
         </div>
       )}

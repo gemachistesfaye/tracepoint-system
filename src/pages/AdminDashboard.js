@@ -38,7 +38,6 @@ const AdminDashboard = () => {
   const [processingId, setProcessingId] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
 
-  // Search/filter state
   const [itemSearch, setItemSearch] = useState("");
   const [itemTypeFilter, setItemTypeFilter] = useState("");
   const [itemStatusFilter, setItemStatusFilter] = useState("");
@@ -48,7 +47,6 @@ const AdminDashboard = () => {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
-  // Modals
   const [selectedClaim, setSelectedClaim] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showMapView, setShowMapView] = useState(false);
@@ -69,7 +67,6 @@ const AdminDashboard = () => {
     navigate(paths[key] || "/admin");
   };
 
-  // ── Actions ────────────────────────────────────────────────────────────────
   const handleClaim = async (claim, action) => {
     setProcessingId(claim.id);
     try {
@@ -131,7 +128,6 @@ const AdminDashboard = () => {
     setProcessingId(null);
   };
 
-  // ── Export ─────────────────────────────────────────────────────────────────
   const exportToExcel = (data, filename) => {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -165,7 +161,6 @@ const AdminDashboard = () => {
     })), "tracepoint-users"
   );
 
-  // ── Filters ────────────────────────────────────────────────────────────────
   const inDateRange = (item) => {
     if (!dateFrom && !dateTo) return true;
     const d = item.createdAt?.toDate ? item.createdAt.toDate() : new Date(item.createdAt || 0);
@@ -197,12 +192,10 @@ const AdminDashboard = () => {
       u.studentId?.toLowerCase().includes(q);
   });
 
-  // ── Computed stats ─────────────────────────────────────────────────────────
   const pendingClaims = claims.filter(c => c.status === "pending");
   const resolved = items.filter(i => i.status === "resolved");
   const admins = users.filter(u => u.role === "admin");
 
-  // avg resolution time
   const avgResolutionDays = (() => {
     const res = items.filter(i => i.status === "resolved" && i.createdAt && i.updatedAt);
     if (!res.length) return "—";
@@ -214,33 +207,31 @@ const AdminDashboard = () => {
     return avg < 1 ? "<1 day" : `${Math.round(avg)} days`;
   })();
 
-  const th = "px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-left bg-white/3 border-b border-white/8";
+  const th = "px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider text-left bg-gray-50 border-b border-gray-200";
   const td = "px-4 py-3.5 text-sm";
-  const inputClass = "bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all";
-  const selectClass = "bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500";
+  const inputClass = "bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all";
+  const selectClass = "bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500";
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e]">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
 
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <div className="bg-purple-600/20 text-purple-400 p-3 rounded-2xl border border-purple-500/20">
+            <div className="bg-purple-50 text-purple-600 p-3 rounded-2xl border border-purple-200">
               <Shield size={24} />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-white">Admin Control Panel</h1>
-              <p className="text-sm text-slate-400 mt-0.5">TracePoint · Haramaya University</p>
+              <h1 className="text-2xl font-black text-gray-900">Admin Control Panel</h1>
+              <p className="text-sm text-gray-500 mt-0.5">TracePoint · Haramaya University</p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-4 py-2 rounded-xl">
-            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
-            <span className="text-xs font-bold text-purple-400">Admin Session Active</span>
+          <div className="hidden sm:flex items-center gap-2 bg-purple-50 border border-purple-200 px-4 py-2 rounded-xl">
+            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+            <span className="text-xs font-bold text-purple-600">Admin Session Active</span>
           </div>
         </div>
 
-        {/* Stats row */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-8">
           {[
             { label: "Total Users", value: users.length, sub: `${admins.length} admins`, icon: <Users size={16} />, color: "blue" },
@@ -249,21 +240,20 @@ const AdminDashboard = () => {
             { label: "Resolved", value: resolved.length, sub: `${items.length ? Math.round(resolved.length/items.length*100) : 0}% rate`, icon: <CheckCircle size={16} />, color: "emerald" },
             { label: "Avg Resolution", value: avgResolutionDays, sub: "per item", icon: <Clock size={16} />, color: "cyan" },
           ].map(s => (
-            <div key={s.label} className={`bg-white/3 border rounded-2xl p-4 ${s.urgent ? "border-yellow-500/30 bg-yellow-500/5" : "border-white/8"}`}>
+            <div key={s.label} className={`bg-white border rounded-2xl p-4 shadow-sm ${s.urgent ? "border-amber-300 bg-amber-50" : "border-gray-200"}`}>
               <div className={`inline-flex p-2 rounded-xl mb-2 text-xs ${
-                s.color==="blue"?"bg-blue-500/10 text-blue-400":s.color==="yellow"?"bg-yellow-500/10 text-yellow-400":
-                s.color==="purple"?"bg-purple-500/10 text-purple-400":s.color==="emerald"?"bg-emerald-500/10 text-emerald-400":
-                s.color==="cyan"?"bg-cyan-500/10 text-cyan-400":"bg-white/10 text-slate-400"
+                s.color==="blue"?"bg-blue-50 text-blue-600":s.color==="yellow"?"bg-amber-50 text-amber-600":
+                s.color==="purple"?"bg-purple-50 text-purple-600":s.color==="emerald"?"bg-emerald-50 text-emerald-600":
+                s.color==="cyan"?"bg-cyan-50 text-cyan-600":"bg-gray-100 text-gray-500"
               }`}>{s.icon}</div>
-              <p className="text-2xl font-black text-white">{s.value}</p>
-              <p className="text-xs text-slate-400 font-medium">{s.label}</p>
-              <p className="text-xs text-slate-600">{s.sub}</p>
+              <p className="text-2xl font-black text-gray-900">{s.value}</p>
+              <p className="text-xs text-gray-500 font-medium">{s.label}</p>
+              <p className="text-xs text-gray-400">{s.sub}</p>
             </div>
           ))}
         </div>
 
-        {/* Tab bar */}
-        <div className="flex gap-1 bg-white/3 border border-white/8 p-1 rounded-2xl w-fit mb-6 flex-wrap">
+        <div className="flex gap-1 bg-gray-100 border border-gray-200 p-1 rounded-2xl w-fit mb-6 flex-wrap">
           {[
             { key:"overview", label:"Overview", icon:<BarChart3 size={13}/> },
             { key:"claims", label:"Claims", icon:<FileText size={13}/>, badge: pendingClaims.length },
@@ -273,11 +263,11 @@ const AdminDashboard = () => {
           ].map(t => (
             <button key={t.key} onClick={() => switchTab(t.key)}
               className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                tab===t.key ? "bg-purple-600 text-white shadow-lg shadow-purple-600/20" : "text-slate-400 hover:text-white hover:bg-white/5"
+                tab===t.key ? "bg-purple-600 text-white shadow-lg shadow-purple-600/20" : "text-gray-500 hover:text-gray-700 hover:bg-white"
               }`}>
               {t.icon}{t.label}
               {t.badge > 0 && (
-                <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${tab===t.key?"bg-white/20 text-white":"bg-white/10 text-slate-300"}`}>
+                <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${tab===t.key?"bg-white/20 text-white":"bg-gray-200 text-gray-600"}`}>
                   {t.badge}
                 </span>
               )}
@@ -287,92 +277,87 @@ const AdminDashboard = () => {
 
         {loading ? (
           <div className="flex items-center justify-center py-24">
-            <Loader2 size={32} className="animate-spin text-purple-400" />
+            <Loader2 size={32} className="animate-spin text-purple-500" />
           </div>
         ) : (
           <>
-            {/* ── OVERVIEW ── */}
             {tab === "overview" && (
               <div className="space-y-6">
                 {pendingClaims.length > 0 && (
-                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-5 flex items-center justify-between">
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <AlertCircle size={20} className="text-yellow-400" />
+                      <AlertCircle size={20} className="text-amber-500" />
                       <div>
-                        <p className="font-bold text-yellow-400">{pendingClaims.length} claim{pendingClaims.length>1?"s":""} awaiting review</p>
-                        <p className="text-xs text-slate-400 mt-0.5">Review and approve or reject ownership claims</p>
+                        <p className="font-bold text-amber-700">{pendingClaims.length} claim{pendingClaims.length>1?"s":""} awaiting review</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Review and approve or reject ownership claims</p>
                       </div>
                     </div>
                     <button onClick={() => switchTab("claims")}
-                      className="text-xs font-bold bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border border-yellow-500/20 px-4 py-2 rounded-xl transition-colors">
+                      className="text-xs font-bold bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-200 px-4 py-2 rounded-xl transition-colors">
                       Review Now →
                     </button>
                   </div>
                 )}
 
-                {/* Map view of all items */}
-                <div className="bg-white/3 border border-white/8 rounded-2xl p-5">
+                <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <MapPin size={16} className="text-purple-400" />
-                      <h3 className="font-bold text-white text-sm">Campus Item Map</h3>
-                      <span className="text-xs text-slate-500">{items.filter(i=>i.status==="open").length} active reports</span>
+                      <MapPin size={16} className="text-purple-500" />
+                      <h3 className="font-bold text-gray-900 text-sm">Campus Item Map</h3>
+                      <span className="text-xs text-gray-400">{items.filter(i=>i.status==="open").length} active reports</span>
                     </div>
                     <div className="flex gap-3 text-xs">
                       <span className="flex items-center gap-1"><span className="w-2 h-2 bg-red-500 rounded-full"/>Lost</span>
                       <span className="flex items-center gap-1"><span className="w-2 h-2 bg-emerald-500 rounded-full"/>Found</span>
                     </div>
                   </div>
-                  <Suspense fallback={<div className="h-64 bg-white/5 rounded-2xl animate-pulse"/>}>
+                  <Suspense fallback={<div className="h-64 bg-gray-100 rounded-2xl animate-pulse"/>}>
                     <CampusMap items={items} readOnly height="300px" showFilter />
                   </Suspense>
                 </div>
 
-                {/* Recent activity */}
-                <div className="bg-white/3 border border-white/8 rounded-2xl overflow-hidden">
-                  <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between">
+                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                  <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Clock size={16} className="text-slate-400"/>
-                      <h3 className="font-bold text-white">Recent Reports</h3>
+                      <Clock size={16} className="text-gray-400"/>
+                      <h3 className="font-bold text-gray-900">Recent Reports</h3>
                     </div>
-                    <span className="text-xs text-slate-500">Last 10 items</span>
+                    <span className="text-xs text-gray-400">Last 10 items</span>
                   </div>
-                  <div className="divide-y divide-white/5">
+                  <div className="divide-y divide-gray-100">
                     {items.slice(0,10).map(item => (
-                      <div key={item.id} className="flex items-center gap-4 px-6 py-4 hover:bg-white/3 transition-colors">
+                      <div key={item.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
                         {item.imageUrl ? (
-                          <img src={item.imageUrl} alt="" className="w-10 h-10 rounded-xl object-cover border border-white/10 shrink-0"/>
+                          <img src={item.imageUrl} alt="" className="w-10 h-10 rounded-xl object-cover border border-gray-200 shrink-0"/>
                         ) : (
-                          <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
-                            <Package size={16} className="text-slate-500"/>
+                          <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                            <Package size={16} className="text-gray-400"/>
                           </div>
                         )}
-                        <span className={`text-xs font-black px-2 py-0.5 rounded-full shrink-0 ${item.type==="lost"?"bg-red-500/20 text-red-400":"bg-emerald-500/20 text-emerald-400"}`}>
+                        <span className={`text-xs font-black px-2 py-0.5 rounded-full shrink-0 ${item.type==="lost"?"bg-red-100 text-red-600":"bg-emerald-100 text-emerald-600"}`}>
                           {item.type.toUpperCase()}
                         </span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">{item.title}</p>
-                          <p className="text-xs text-slate-500">{item.location} · {item.reporterName}</p>
+                          <p className="text-sm font-semibold text-gray-900 truncate">{item.title}</p>
+                          <p className="text-xs text-gray-400">{item.location} · {item.reporterName}</p>
                         </div>
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                          item.status==="open"?"bg-emerald-500/10 text-emerald-400":item.status==="claimed"?"bg-yellow-500/10 text-yellow-400":"bg-white/10 text-slate-400"
+                          item.status==="open"?"bg-emerald-50 text-emerald-600":item.status==="claimed"?"bg-amber-50 text-amber-600":"bg-gray-100 text-gray-500"
                         }`}>{item.status}</span>
-                        <span className="text-xs text-slate-500 shrink-0 hidden sm:block">{timeAgo(item.createdAt)}</span>
+                        <span className="text-xs text-gray-400 shrink-0 hidden sm:block">{timeAgo(item.createdAt)}</span>
                       </div>
                     ))}
-                    {items.length===0 && <div className="py-12 text-center text-slate-500 text-sm">No items yet</div>}
+                    {items.length===0 && <div className="py-12 text-center text-gray-400 text-sm">No items yet</div>}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* ── CLAIMS ── */}
             {tab === "claims" && (
               <div className="space-y-4">
-                {/* Filters */}
-                <div className="bg-white/3 border border-white/8 rounded-2xl p-4 flex flex-wrap gap-3">
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-wrap gap-3 shadow-sm">
                   <div className="relative flex-1 min-w-48">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/>
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
                     <input value={claimSearch} onChange={e=>setClaimSearch(e.target.value)} placeholder="Search claims..."
                       className={`${inputClass} pl-8 w-full`}/>
                   </div>
@@ -383,20 +368,20 @@ const AdminDashboard = () => {
                     <option value="rejected">Rejected</option>
                   </select>
                   <button onClick={exportClaims}
-                    className="flex items-center gap-1.5 text-xs bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 px-3 py-2 rounded-xl transition-colors font-medium">
+                    className="flex items-center gap-1.5 text-xs bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-600 px-3 py-2 rounded-xl transition-colors font-medium">
                     <Download size={13}/> Export
                   </button>
                 </div>
 
-                <div className="bg-white/3 border border-white/8 rounded-2xl overflow-hidden">
-                  <div className="px-5 py-3.5 border-b border-white/8 flex items-center justify-between">
+                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                  <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <FileText size={15} className="text-slate-400"/>
-                      <h3 className="font-bold text-white text-sm">Ownership Claims</h3>
+                      <FileText size={15} className="text-gray-400"/>
+                      <h3 className="font-bold text-gray-900 text-sm">Ownership Claims</h3>
                     </div>
                     <div className="flex gap-2 text-xs">
-                      <span className="bg-yellow-500/10 text-yellow-400 px-2 py-1 rounded-lg font-bold">{pendingClaims.length} pending</span>
-                      <span className="bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded-lg font-bold">{claims.filter(c=>c.status==="approved").length} approved</span>
+                      <span className="bg-amber-50 text-amber-600 px-2 py-1 rounded-lg font-bold border border-amber-200">{pendingClaims.length} pending</span>
+                      <span className="bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg font-bold border border-emerald-200">{claims.filter(c=>c.status==="approved").length} approved</span>
                     </div>
                   </div>
                   <div className="overflow-x-auto">
@@ -406,37 +391,37 @@ const AdminDashboard = () => {
                         <th className={th}>Proof</th><th className={th}>Date</th>
                         <th className={th}>Status</th><th className={th}>Actions</th>
                       </tr></thead>
-                      <tbody className="divide-y divide-white/5">
+                      <tbody className="divide-y divide-gray-100">
                         {filteredClaims.length===0 ? (
-                          <tr><td colSpan={6} className="text-center py-12 text-slate-500 text-sm">No claims found</td></tr>
+                          <tr><td colSpan={6} className="text-center py-12 text-gray-400 text-sm">No claims found</td></tr>
                         ) : filteredClaims.map(claim => (
-                          <tr key={claim.id} className={`hover:bg-white/3 transition-colors cursor-pointer ${claim.status==="pending"?"bg-yellow-500/3":""}`}
+                          <tr key={claim.id} className={`hover:bg-gray-50 transition-colors cursor-pointer ${claim.status==="pending"?"bg-amber-50/50":""}`}
                             onClick={() => setSelectedClaim(claim)}>
-                            <td className={`${td} font-semibold text-white max-w-[130px] truncate`}>{claim.itemTitle}</td>
+                            <td className={`${td} font-semibold text-gray-900 max-w-[130px] truncate`}>{claim.itemTitle}</td>
                             <td className={td}>
-                              <p className="text-slate-200 font-medium">{claim.claimantName}</p>
-                              <p className="text-xs text-slate-500">{claim.claimantPhone}</p>
+                              <p className="text-gray-700 font-medium">{claim.claimantName}</p>
+                              <p className="text-xs text-gray-400">{claim.claimantPhone}</p>
                             </td>
                             <td className={`${td} max-w-[180px]`}>
-                              <p className="text-xs text-slate-400 line-clamp-2">{claim.proof}</p>
+                              <p className="text-xs text-gray-500 line-clamp-2">{claim.proof}</p>
                             </td>
-                            <td className={`${td} text-slate-500 text-xs`}>{formatDate(claim.createdAt)}</td>
+                            <td className={`${td} text-gray-400 text-xs`}>{formatDate(claim.createdAt)}</td>
                             <td className={td}>
                               <span className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize border ${
-                                claim.status==="pending"?"bg-yellow-500/10 text-yellow-400 border-yellow-500/20":
-                                claim.status==="approved"?"bg-emerald-500/10 text-emerald-400 border-emerald-500/20":
-                                "bg-red-500/10 text-red-400 border-red-500/20"
+                                claim.status==="pending"?"bg-amber-50 text-amber-600 border-amber-200":
+                                claim.status==="approved"?"bg-emerald-50 text-emerald-600 border-emerald-200":
+                                "bg-red-50 text-red-500 border-red-200"
                               }`}>{claim.status}</span>
                             </td>
                             <td className={td} onClick={e=>e.stopPropagation()}>
                               {claim.status==="pending" && (
                                 <div className="flex gap-2">
                                   <button onClick={()=>handleClaim(claim,"approved")} disabled={processingId===claim.id}
-                                    className="flex items-center gap-1 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-lg hover:bg-emerald-500/20 disabled:opacity-50 font-semibold transition-colors">
+                                    className="flex items-center gap-1 text-xs bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 disabled:opacity-50 font-semibold transition-colors">
                                     {processingId===claim.id?<Loader2 size={11} className="animate-spin"/>:<CheckCircle size={11}/>} Approve
                                   </button>
                                   <button onClick={()=>handleClaim(claim,"rejected")} disabled={processingId===claim.id}
-                                    className="flex items-center gap-1 text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500/20 disabled:opacity-50 font-semibold transition-colors">
+                                    className="flex items-center gap-1 text-xs bg-red-50 text-red-500 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-100 disabled:opacity-50 font-semibold transition-colors">
                                     <XCircle size={11}/> Reject
                                   </button>
                                 </div>
@@ -451,13 +436,11 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* ── ITEMS ── */}
             {tab === "items" && (
               <div className="space-y-4">
-                {/* Filters + bulk actions */}
-                <div className="bg-white/3 border border-white/8 rounded-2xl p-4 flex flex-wrap gap-3 items-center">
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-wrap gap-3 items-center shadow-sm">
                   <div className="relative min-w-48 flex-1">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/>
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
                     <input value={itemSearch} onChange={e=>setItemSearch(e.target.value)} placeholder="Search items..."
                       className={`${inputClass} pl-8 w-full`}/>
                   </div>
@@ -477,28 +460,28 @@ const AdminDashboard = () => {
                     <input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} className={selectClass} title="To date"/>
                   </div>
                   <button onClick={exportItems}
-                    className="flex items-center gap-1.5 text-xs bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 px-3 py-2 rounded-xl transition-colors font-medium">
+                    className="flex items-center gap-1.5 text-xs bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-600 px-3 py-2 rounded-xl transition-colors font-medium">
                     <Download size={13}/> Export
                   </button>
                   {selectedIds.length > 0 && (
                     <div className="flex gap-2">
                       <button onClick={handleBulkResolve} disabled={processingId==="bulk"}
-                        className="flex items-center gap-1 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-2 rounded-xl hover:bg-emerald-500/20 font-semibold disabled:opacity-50">
+                        className="flex items-center gap-1 text-xs bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-2 rounded-xl hover:bg-emerald-100 font-semibold disabled:opacity-50">
                         <CheckSquare size={12}/> Resolve ({selectedIds.length})
                       </button>
                       <button onClick={handleBulkDelete} disabled={processingId==="bulk"}
-                        className="flex items-center gap-1 text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-2 rounded-xl hover:bg-red-500/20 font-semibold disabled:opacity-50">
+                        className="flex items-center gap-1 text-xs bg-red-50 text-red-500 border border-red-200 px-3 py-2 rounded-xl hover:bg-red-100 font-semibold disabled:opacity-50">
                         <Trash2 size={12}/> Delete ({selectedIds.length})
                       </button>
                     </div>
                   )}
                 </div>
 
-                <div className="bg-white/3 border border-white/8 rounded-2xl overflow-hidden">
-                  <div className="px-5 py-3.5 border-b border-white/8 flex items-center gap-2">
-                    <Package size={15} className="text-slate-400"/>
-                    <h3 className="font-bold text-white text-sm">All Items</h3>
-                    <span className="text-xs text-slate-500 ml-auto">{filteredItems.length} of {items.length}</span>
+                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                  <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
+                    <Package size={15} className="text-gray-400"/>
+                    <h3 className="font-bold text-gray-900 text-sm">All Items</h3>
+                    <span className="text-xs text-gray-400 ml-auto">{filteredItems.length} of {items.length}</span>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full">
@@ -513,11 +496,11 @@ const AdminDashboard = () => {
                         <th className={th}>Reporter</th><th className={th}>Status</th>
                         <th className={th}>Date</th><th className={th}>Actions</th>
                       </tr></thead>
-                      <tbody className="divide-y divide-white/5">
+                      <tbody className="divide-y divide-gray-100">
                         {filteredItems.length===0 ? (
-                          <tr><td colSpan={9} className="text-center py-12 text-slate-500 text-sm">No items found</td></tr>
+                          <tr><td colSpan={9} className="text-center py-12 text-gray-400 text-sm">No items found</td></tr>
                         ) : filteredItems.map(item => (
-                          <tr key={item.id} className="hover:bg-white/3 transition-colors group">
+                          <tr key={item.id} className="hover:bg-gray-50 transition-colors group">
                             <td className={td} onClick={e=>e.stopPropagation()}>
                               <input type="checkbox" className="rounded"
                                 checked={selectedIds.includes(item.id)}
@@ -526,39 +509,39 @@ const AdminDashboard = () => {
                             <td className={td}>
                               <div className="flex items-center gap-2">
                                 {item.imageUrl ? (
-                                  <img src={item.imageUrl} alt="" className="w-9 h-9 rounded-lg object-cover border border-white/10 shrink-0 cursor-pointer"
+                                  <img src={item.imageUrl} alt="" className="w-9 h-9 rounded-lg object-cover border border-gray-200 shrink-0 cursor-pointer"
                                     onClick={()=>setSelectedItem(item)}/>
                                 ) : (
-                                  <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
-                                    <Image size={13} className="text-slate-600"/>
+                                  <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                                    <Image size={13} className="text-gray-400"/>
                                   </div>
                                 )}
-                                <span className="text-sm font-semibold text-white max-w-[120px] truncate">{item.title}</span>
+                                <span className="text-sm font-semibold text-gray-900 max-w-[120px] truncate">{item.title}</span>
                               </div>
                             </td>
                             <td className={td}>
-                              <span className={`text-xs font-black px-2 py-0.5 rounded-full ${item.type==="lost"?"bg-red-500/20 text-red-400":"bg-emerald-500/20 text-emerald-400"}`}>
+                              <span className={`text-xs font-black px-2 py-0.5 rounded-full ${item.type==="lost"?"bg-red-100 text-red-600":"bg-emerald-100 text-emerald-600"}`}>
                                 {item.type.toUpperCase()}
                               </span>
                             </td>
-                            <td className={`${td} text-slate-400`}>{item.category}</td>
-                            <td className={`${td} text-slate-400 max-w-[110px] truncate`}>{item.location}</td>
-                            <td className={`${td} text-slate-400`}>{item.reporterName}</td>
+                            <td className={`${td} text-gray-500`}>{item.category}</td>
+                            <td className={`${td} text-gray-500 max-w-[110px] truncate`}>{item.location}</td>
+                            <td className={`${td} text-gray-500`}>{item.reporterName}</td>
                             <td className={td}>
                               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                                item.status==="open"?"bg-emerald-500/10 text-emerald-400":
-                                item.status==="claimed"?"bg-yellow-500/10 text-yellow-400":"bg-white/10 text-slate-400"
+                                item.status==="open"?"bg-emerald-50 text-emerald-600":
+                                item.status==="claimed"?"bg-amber-50 text-amber-600":"bg-gray-100 text-gray-500"
                               }`}>{item.status}</span>
                             </td>
-                            <td className={`${td} text-slate-500 text-xs`}>{formatDate(item.createdAt)}</td>
+                            <td className={`${td} text-gray-400 text-xs`}>{formatDate(item.createdAt)}</td>
                             <td className={td}>
                               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <a href={`/items/${item.id}`} target="_blank" rel="noreferrer"
-                                  className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                                  className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
                                   <Eye size={13}/>
                                 </a>
                                 <button onClick={()=>handleDeleteItem(item)} disabled={processingId===item.id}
-                                  className="p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50">
+                                  className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50">
                                   {processingId===item.id?<Loader2 size={13} className="animate-spin"/>:<Trash2 size={13}/>}
                                 </button>
                               </div>
@@ -572,26 +555,25 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* ── USERS ── */}
             {tab === "users" && (
               <div className="space-y-4">
-                <div className="bg-white/3 border border-white/8 rounded-2xl p-4 flex flex-wrap gap-3">
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-wrap gap-3 shadow-sm">
                   <div className="relative flex-1 min-w-48">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/>
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
                     <input value={userSearch} onChange={e=>setUserSearch(e.target.value)} placeholder="Search users..."
                       className={`${inputClass} pl-8 w-full`}/>
                   </div>
                   <button onClick={exportUsers}
-                    className="flex items-center gap-1.5 text-xs bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 px-3 py-2 rounded-xl transition-colors font-medium">
+                    className="flex items-center gap-1.5 text-xs bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-600 px-3 py-2 rounded-xl transition-colors font-medium">
                     <Download size={13}/> Export
                   </button>
                 </div>
 
-                <div className="bg-white/3 border border-white/8 rounded-2xl overflow-hidden">
-                  <div className="px-5 py-3.5 border-b border-white/8 flex items-center gap-2">
-                    <Users size={15} className="text-slate-400"/>
-                    <h3 className="font-bold text-white text-sm">User Management</h3>
-                    <span className="text-xs text-slate-500 ml-auto">{filteredUsers.length} users · {admins.length} admins</span>
+                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                  <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
+                    <Users size={15} className="text-gray-400"/>
+                    <h3 className="font-bold text-gray-900 text-sm">User Management</h3>
+                    <span className="text-xs text-gray-400 ml-auto">{filteredUsers.length} users · {admins.length} admins</span>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full">
@@ -600,38 +582,38 @@ const AdminDashboard = () => {
                         <th className={th}>Phone</th><th className={th}>Items</th>
                         <th className={th}>Role</th><th className={th}>Actions</th>
                       </tr></thead>
-                      <tbody className="divide-y divide-white/5">
+                      <tbody className="divide-y divide-gray-100">
                         {filteredUsers.length===0 ? (
-                          <tr><td colSpan={6} className="text-center py-12 text-slate-500 text-sm">No users found</td></tr>
+                          <tr><td colSpan={6} className="text-center py-12 text-gray-400 text-sm">No users found</td></tr>
                         ) : filteredUsers.map(user => {
                           const userItems = items.filter(i=>i.reportedBy===user.id).length;
                           return (
-                            <tr key={user.id} className="hover:bg-white/3 transition-colors">
+                            <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                               <td className={td}>
                                 <div className="flex items-center gap-3">
                                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 ${
-                                    user.role==="admin"?"bg-gradient-to-br from-purple-500 to-indigo-600":"bg-gradient-to-br from-slate-600 to-slate-700"
+                                    user.role==="admin"?"bg-gradient-to-br from-purple-500 to-indigo-600":"bg-gradient-to-br from-gray-400 to-gray-500"
                                   }`}>{user.name?.[0]?.toUpperCase()||"?"}</div>
                                   <div>
-                                    <p className="text-sm font-semibold text-white">{user.name}</p>
-                                    <p className="text-xs text-slate-500">{user.email}</p>
+                                    <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                                    <p className="text-xs text-gray-400">{user.email}</p>
                                   </div>
                                 </div>
                               </td>
-                              <td className={`${td} text-slate-400`}>{user.studentId||"—"}</td>
-                              <td className={`${td} text-slate-400`}>{user.phone||"—"}</td>
+                              <td className={`${td} text-gray-500`}>{user.studentId||"—"}</td>
+                              <td className={`${td} text-gray-500`}>{user.phone||"—"}</td>
                               <td className={td}>
-                                <span className="text-xs bg-white/8 text-slate-300 px-2 py-0.5 rounded-lg">{userItems} reports</span>
+                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-lg">{userItems} reports</span>
                               </td>
                               <td className={td}>
                                 <span className={`text-xs font-bold px-2.5 py-1.5 rounded-full ${
-                                  user.role==="admin"?"bg-purple-500/20 text-purple-400 border border-purple-500/20":"bg-white/8 text-slate-400 border border-white/8"
+                                  user.role==="admin"?"bg-purple-50 text-purple-600 border border-purple-200":"bg-gray-100 text-gray-500 border border-gray-200"
                                 }`}>{user.role==="admin"?"⚡ Admin":"Student"}</span>
                               </td>
                               <td className={td}>
                                 <button onClick={()=>toggleRole(user)} disabled={processingId===user.id}
                                   className={`flex items-center gap-1.5 text-xs border px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-semibold ${
-                                    user.role==="admin"?"border-red-500/20 text-red-400 hover:bg-red-500/10":"border-purple-500/20 text-purple-400 hover:bg-purple-500/10"
+                                    user.role==="admin"?"border-red-200 text-red-500 hover:bg-red-50":"border-purple-200 text-purple-600 hover:bg-purple-50"
                                   }`}>
                                   {processingId===user.id?<Loader2 size={11} className="animate-spin"/>:user.role==="admin"?<ShieldOff size={11}/>:<Shield size={11}/>}
                                   {user.role==="admin"?"Remove Admin":"Make Admin"}
@@ -647,19 +629,17 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* ── ANALYTICS ── */}
             {tab==="analytics" && <AnalyticsDashboard />}
           </>
         )}
       </div>
 
-      {/* Claim detail modal */}
       {selectedClaim && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0f1629] border border-white/10 rounded-3xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between p-6 border-b border-white/8">
-              <h3 className="font-bold text-white">Claim Details</h3>
-              <button onClick={()=>setSelectedClaim(null)} className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"><X size={18}/></button>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-gray-200 rounded-3xl w-full max-w-lg shadow-2xl">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+              <h3 className="font-bold text-gray-900">Claim Details</h3>
+              <button onClick={()=>setSelectedClaim(null)} className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-colors"><X size={18}/></button>
             </div>
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-3">
@@ -671,30 +651,30 @@ const AdminDashboard = () => {
                   {label:"Status",value:selectedClaim.status},
                   {label:"Submitted",value:formatDate(selectedClaim.createdAt)},
                 ].map(f=>(
-                  <div key={f.label} className="bg-white/3 border border-white/5 rounded-xl p-3">
-                    <p className="text-xs text-slate-500 uppercase tracking-wide">{f.label}</p>
-                    <p className="text-sm font-semibold text-white mt-0.5 capitalize">{f.value||"—"}</p>
+                  <div key={f.label} className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+                    <p className="text-xs text-gray-400 uppercase tracking-wide">{f.label}</p>
+                    <p className="text-sm font-semibold text-gray-900 mt-0.5 capitalize">{f.value||"—"}</p>
                   </div>
                 ))}
               </div>
-              <div className="bg-white/3 border border-white/5 rounded-xl p-4">
-                <p className="text-xs text-slate-500 uppercase tracking-wide mb-2">Proof of Ownership</p>
-                <p className="text-sm text-slate-300 leading-relaxed">{selectedClaim.proof}</p>
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Proof of Ownership</p>
+                <p className="text-sm text-gray-600 leading-relaxed">{selectedClaim.proof}</p>
               </div>
               {selectedClaim.additionalInfo && (
-                <div className="bg-white/3 border border-white/5 rounded-xl p-4">
-                  <p className="text-xs text-slate-500 uppercase tracking-wide mb-2">Additional Info</p>
-                  <p className="text-sm text-slate-300">{selectedClaim.additionalInfo}</p>
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                  <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Additional Info</p>
+                  <p className="text-sm text-gray-600">{selectedClaim.additionalInfo}</p>
                 </div>
               )}
               {selectedClaim.status==="pending" && (
                 <div className="flex gap-3 pt-2">
                   <button onClick={()=>handleClaim(selectedClaim,"approved")} disabled={!!processingId}
-                    className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm disabled:opacity-50 transition-colors">
+                    className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm disabled:opacity-50 transition-colors">
                     {processingId?<Loader2 size={14} className="animate-spin"/>:<CheckCircle size={14}/>} Approve Claim
                   </button>
                   <button onClick={()=>handleClaim(selectedClaim,"rejected")} disabled={!!processingId}
-                    className="flex-1 flex items-center justify-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/20 font-bold py-3 rounded-xl text-sm disabled:opacity-50 transition-colors">
+                    className="flex-1 flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold py-3 rounded-xl text-sm disabled:opacity-50 transition-colors">
                     <XCircle size={14}/> Reject
                   </button>
                 </div>
@@ -704,11 +684,10 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* Image preview modal */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={()=>setSelectedItem(null)}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={()=>setSelectedItem(null)}>
           <div className="relative max-w-2xl w-full">
-            <button onClick={()=>setSelectedItem(null)} className="absolute -top-10 right-0 text-white/60 hover:text-white"><X size={24}/></button>
+            <button onClick={()=>setSelectedItem(null)} className="absolute -top-10 right-0 text-white/80 hover:text-white"><X size={24}/></button>
             <img src={selectedItem.imageUrl} alt={selectedItem.title} className="w-full rounded-2xl shadow-2xl"/>
             <p className="text-center text-white font-bold mt-3">{selectedItem.title}</p>
           </div>
