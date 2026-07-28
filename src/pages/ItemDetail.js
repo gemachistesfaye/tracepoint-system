@@ -10,14 +10,16 @@ import toast from "react-hot-toast";
 import {
   MapPin, Calendar, Tag, Phone, User, ArrowLeft, Trash2,
   CheckCircle, Loader2, AlertCircle, Zap, Clock, AlertTriangle,
+  MessageSquare,
 } from "lucide-react";
+import { getOrCreateConversation } from "../firebase/firestore";
 
 const CampusMap = lazy(() => import("../components/map/CampusMap"));
 
 const ItemDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentUser, isAdmin } = useAuth();
+  const { currentUser, userProfile, isAdmin } = useAuth();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showClaim, setShowClaim] = useState(false);
@@ -41,6 +43,21 @@ const ItemDetail = () => {
 
   const isOwner = currentUser?.uid === item?.reportedBy;
   const canClaim = currentUser && !isOwner && item?.status === "open";
+  const canContact = currentUser && !isOwner;
+
+  const handleContactReporter = async () => {
+    try {
+      const convId = await getOrCreateConversation(
+        currentUser.uid,
+        item.reportedBy,
+        userProfile?.name || "User",
+        item.reporterName || "Reporter"
+      );
+      navigate(`/messages`, { state: { conversationId: convId } });
+    } catch (err) {
+      toast.error("Could not start conversation.");
+    }
+  };
 
   const handleDelete = async () => {
     if (!window.confirm("Delete this report?")) return;
@@ -153,6 +170,12 @@ const ItemDetail = () => {
                   <button onClick={() => setShowClaim(true)}
                     className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold px-5 py-2.5 rounded-xl transition-all hover:-translate-y-0.5">
                     <CheckCircle size={16} /> Claim This Item
+                  </button>
+                )}
+                {canContact && item.reportedBy && (
+                  <button onClick={handleContactReporter}
+                    className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold px-5 py-2.5 rounded-xl transition-all hover:-translate-y-0.5">
+                    <MessageSquare size={16} /> Contact Reporter
                   </button>
                 )}
                 {(isOwner || isAdmin) && item.status !== "resolved" && (

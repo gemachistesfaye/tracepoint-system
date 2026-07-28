@@ -3,9 +3,8 @@ import { Link } from "react-router-dom";
 import {
   MapPin, Search, PlusCircle, CheckCircle, ArrowRight,
   Zap, Shield, Bell, TrendingUp, Eye, ChevronRight,
-  Star, Users, Package, BarChart3,
+  Star, Users, Package, BarChart3, Download,
 } from "lucide-react";
-import InstallButton from "../components/common/InstallButton";
 
 const Counter = ({ target, suffix = "" }) => {
   const [count, setCount] = useState(0);
@@ -90,7 +89,9 @@ const LandingPage = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <InstallButton />
+            <Link to="/install" className="hidden sm:inline-flex items-center gap-1.5 text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200 px-3 py-2 rounded-xl transition-all text-sm font-medium">
+              <Download size={15} /> Install
+            </Link>
             <Link to="/login" className="hidden sm:inline-flex text-sm font-medium text-gray-500 hover:text-gray-900 px-4 py-2 rounded-xl hover:bg-gray-100 transition-all">
               Sign In
             </Link>

@@ -4,26 +4,103 @@
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg" />
     <link rel="alternate icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#2563eb" />
-    <meta name="description" content="TracePoint — Haramaya University Smart Lost & Found System" />
+    <meta name="description" content="TracePoint — Haramaya University Smart Lost & Found System. Report, search, and recover lost items with AI-powered matching." />
+    <meta name="keywords" content="lost and found, Haramaya University, campus, lost items, found items, tracepoint" />
+
+    <!-- PWA: iOS / Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="TracePoint - HU" />
+    <meta name="apple-mobile-web-app-title" content="HU Lost&Found" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+
+    <!-- PWA: Android / Chrome -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <title>TracePoint - HU</title>
-    <!-- Register SW immediately before React loads -->
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="TracePoint - HU Lost & Found" />
+    <meta property="og:description" content="Smart lost & found platform for Haramaya University campus" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="%PUBLIC_URL%/logo512.png" />
+
+    <title>TracePoint - HU Lost & Found</title>
+
+    <!-- Service Worker Registration -->
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-          .then(function(reg) { console.log('[SW] Registered:', reg.scope); })
-          .catch(function(err) { console.log('[SW] Failed:', err); });
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(reg) {
+              console.log('[SW] Registered:', reg.scope);
+              // Check for updates periodically
+              setInterval(function() { reg.update(); }, 60 * 60 * 1000);
+            })
+            .catch(function(err) {
+              console.log('[SW] Registration failed:', err);
+            });
+        });
       }
     </script>
+
+    <!-- Inline critical offline styles -->
+    <style>
+      .offline-banner {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background: #f59e0b;
+        color: #000;
+        text-align: center;
+        padding: 8px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .offline-banner.visible { display: block; }
+      .offline-fallback {
+        display: none;
+        text-align: center;
+        padding: 60px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      .offline-fallback.visible { display: block; }
+      .offline-fallback h1 { font-size: 24px; margin-bottom: 8px; color: #1e293b; }
+      .offline-fallback p { color: #64748b; font-size: 14px; }
+    </style>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <!-- Offline indicator -->
+    <div class="offline-banner" id="offline-banner">
+      You're offline. Some features may be unavailable.
+    </div>
+
+    <noscript>
+      <div style="text-align:center;padding:60px 20px;font-family:sans-serif;">
+        <h1>TracePoint - HU Lost & Found</h1>
+        <p>You need to enable JavaScript to use this app.</p>
+      </div>
+    </noscript>
+
     <div id="root"></div>
+
+    <!-- Offline detection script -->
+    <script>
+      (function() {
+        var banner = document.getElementById('offline-banner');
+        function updateOnlineStatus() {
+          if (!navigator.onLine) {
+            banner.classList.add('visible');
+          } else {
+            banner.classList.remove('visible');
+          }
+        }
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+      })();
+    </script>
   </body>
 </html>

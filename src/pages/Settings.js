@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../context/AuthContext";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
+import { getNotificationPreferences, updateNotificationPreferences } from "../firebase/firestore";
 import toast from "react-hot-toast";
 import { Settings as SettingsIcon, User, Lock, Bell, Shield, Loader2, Save, Eye, EyeOff } from "lucide-react";
 
@@ -13,15 +14,22 @@ const Settings = () => {
   const [tab, setTab] = useState("profile");
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [notifSaving, setNotifSaving] = useState(false);
 
   const profileForm = useForm({
     defaultValues: { name: userProfile?.name || "", phone: userProfile?.phone || "", studentId: userProfile?.studentId || "" }
   });
 
   const passwordForm = useForm();
-  const notifForm = useForm({
-    defaultValues: { emailNotifications: true, pushNotifications: true, matchAlerts: true, claimUpdates: true }
-  });
+  const notifForm = useForm();
+
+  useEffect(() => {
+    if (currentUser && tab === "notifications") {
+      getNotificationPreferences(currentUser.uid).then(prefs => {
+        notifForm.reset(prefs);
+      });
+    }
+  }, [currentUser, tab]);
 
   const onProfileSubmit = async (data) => {
     try {
@@ -45,8 +53,15 @@ const Settings = () => {
     }
   };
 
-  const onNotifSubmit = (data) => {
-    toast.success("Notification preferences saved!");
+  const onNotifSubmit = async (data) => {
+    setNotifSaving(true);
+    try {
+      await updateNotificationPreferences(currentUser.uid, data);
+      toast.success("Notification preferences saved!");
+    } catch {
+      toast.error("Failed to save preferences.");
+    }
+    setNotifSaving(false);
   };
 
   const inputClass = "w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all";
@@ -89,7 +104,7 @@ const Settings = () => {
               <input type="text" className={inputClass} {...profileForm.register("name", { required: "Name is required" })} />
             </div>
             <div>
-              <label className={labelClass}>Student ID</label>
+              <label className={labelClass}>Student/Staff ID</label>
               <input type="text" className={inputClass} {...profileForm.register("studentId")} />
             </div>
             <div>
@@ -166,6 +181,7 @@ const Settings = () => {
               { name: "pushNotifications", label: "Push Notifications", desc: "Browser notifications for real-time alerts" },
               { name: "matchAlerts", label: "Match Alerts", desc: "Get notified when a potential match is found" },
               { name: "claimUpdates", label: "Claim Updates", desc: "Status changes on your submitted claims" },
+              { name: "adminAnnouncements", label: "Admin Announcements", desc: "System-wide announcements from administrators" },
             ].map(f => (
               <label key={f.name} className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
                 <div>
@@ -176,9 +192,9 @@ const Settings = () => {
                   {...notifForm.register(f.name)} />
               </label>
             ))}
-            <button type="submit"
-              className="flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl transition-all px-6">
-              <Save size={16} /> Save Preferences
+            <button type="submit" disabled={notifSaving}
+              className="flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl transition-all disabled:opacity-50 px-6">
+              {notifSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save Preferences
             </button>
           </form>
         </div>

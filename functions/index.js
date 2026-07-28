@@ -3,8 +3,9 @@ const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
 const { handleMatchOnLostItemCreated, handleMatchOnFoundItemCreated } = require("./matching");
-const { handleMatchCreated, handleClaimStatusChanged, handleItemReturned } = require("./notifications");
+const { handleMatchCreated, handleClaimStatusChanged, handleItemReturned, handleClaimSubmitted } = require("./notifications");
 const { handleItemCreated, handleItemUpdated, handleItemDeleted, handleClaimProcessed } = require("./audit");
+const { cleanupOldNotifications, cleanupRateLimits, cleanupOldAuditLogs } = require("./cleanup");
 
 initializeApp();
 
@@ -32,6 +33,10 @@ exports.onItemReturned = onDocumentUpdated("lostItems/{itemId}", async (event) =
 
 exports.onFoundItemReturned = onDocumentUpdated("foundItems/{itemId}", async (event) => {
   await handleItemReturned(event, getFirestore(), getMessaging());
+});
+
+exports.onClaimCreated = onDocumentCreated("claims/{claimId}", async (event) => {
+  await handleClaimSubmitted(event, getFirestore(), getMessaging());
 });
 
 // ── AUDIT LOGS ───────────────────────────────────────────────────────────────
@@ -62,3 +67,8 @@ exports.onFoundItemDeleted = onDocumentDeleted("foundItems/{itemId}", async (eve
 exports.onClaimProcessed = onDocumentUpdated("claims/{claimId}", async (event) => {
   await handleClaimProcessed(event, getFirestore());
 });
+
+// ── SCHEDULED CLEANUP ────────────────────────────────────────────────────────
+exports.cleanupOldNotifications = cleanupOldNotifications;
+exports.cleanupRateLimits = cleanupRateLimits;
+exports.cleanupOldAuditLogs = cleanupOldAuditLogs;

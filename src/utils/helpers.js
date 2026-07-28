@@ -44,24 +44,32 @@ export const LOCATIONS = [
 
 export const STATUS_COLORS = {
   open: "bg-emerald-50 text-emerald-700",
+  active: "bg-emerald-50 text-emerald-700",
+  matched: "bg-blue-50 text-blue-700",
   claimed: "bg-amber-50 text-amber-700",
   resolved: "bg-gray-100 text-gray-500",
+  returned: "bg-gray-100 text-gray-500",
+  closed: "bg-gray-100 text-gray-500",
 };
 
 export const STATUS_LABELS = {
   open: "Open",
+  active: "Active",
+  matched: "Matched",
   claimed: "Claim Pending",
   resolved: "Resolved",
+  returned: "Returned",
+  closed: "Closed",
 };
 
 export const formatDate = (timestamp) => {
-  if (!timestamp) return "—";
+  if (!timestamp) return "\u2014";
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
   return format(date, "MMM dd, yyyy");
 };
 
 export const timeAgo = (timestamp) => {
-  if (!timestamp) return "—";
+  if (!timestamp) return "\u2014";
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
   return formatDistanceToNow(date, { addSuffix: true });
 };
@@ -86,7 +94,7 @@ export const searchItems = (items, query) => {
   const q = query.toLowerCase();
   return items.filter((item) => {
     const haystack = [
-      item.title, item.description, item.category, item.location,
+      item.title, item.description, item.category, item.location, item.brand, item.color,
     ].filter(Boolean).join(" ").toLowerCase();
     if (haystack.includes(q)) return true;
     const words = q.split(/\s+/);
@@ -118,4 +126,46 @@ export const sortItems = (items, sortBy) => {
     default:
       return sorted;
   }
+};
+
+export const formatFileSize = (bytes) => {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+};
+
+export const compressImage = (file, maxWidth = 1200, quality = 0.8) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            resolve(new File([blob], file.name, { type: "image/jpeg" }));
+          },
+          "image/jpeg",
+          quality
+        );
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
 };

@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import {
   subscribeToConversations,
-  getOrCreateConversation,
   sendMessage,
   subscribeToMessages,
   markMessagesRead,
-} from "../../firebase/messages";
+} from "../firebase/firestore";
 import { MessageSquare, Send, ArrowLeft, User, Loader2 } from "lucide-react";
 
 const Messages = () => {

@@ -11,7 +11,6 @@ const handleMatchCreated = async (event, db, messaging) => {
   console.log(`Sending notifications for match: ${matchId}`);
 
   try {
-    // Get both item owners
     const [lostItemSnap, foundItemSnap] = await Promise.all([
       db.collection("lostItems").doc(match.lostItemId).get(),
       db.collection("foundItems").doc(match.foundItemId).get(),
@@ -20,7 +19,6 @@ const handleMatchCreated = async (event, db, messaging) => {
     const lostItem = lostItemSnap.data();
     const foundItem = foundItemSnap.data();
 
-    // Create Firestore notification for lost item owner
     if (lostItem?.reportedBy) {
       await db.collection("notifications").add({
         userId: lostItem.reportedBy,
@@ -32,14 +30,12 @@ const handleMatchCreated = async (event, db, messaging) => {
         createdAt: new Date(),
       });
 
-      // Send FCM push
       await sendPushNotification(db, messaging, lostItem.reportedBy, {
         title: "Possible Match Found!",
         body: `A found item may match your lost "${match.lostItemTitle}"`,
       });
     }
 
-    // Create Firestore notification for found item owner
     if (foundItem?.reportedBy) {
       await db.collection("notifications").add({
         userId: foundItem.reportedBy,
@@ -73,11 +69,15 @@ const handleClaimStatusChanged = async (event, db, messaging) => {
   console.log(`Claim ${claimId} status changed: ${before.status} -> ${after.status}`);
 
   try {
+    // Check notification preferences
+    const prefsSnap = await db.collection("notificationPreferences").doc(after.claimantId).get();
+    const prefs = prefsSnap.data() || {};
+    if (prefs.claimUpdates === false) return;
+
     const message = after.status === "approved"
       ? `Your claim for "${after.itemTitle}" has been approved! Contact the Lost & Found office to collect it.`
       : `Your claim for "${after.itemTitle}" was not approved. Please contact the admin for details.`;
 
-    // Notify claimant
     await db.collection("notifications").add({
       userId: after.claimantId,
       title: after.status === "approved" ? "Claim Approved" : "Claim Update",
@@ -109,6 +109,10 @@ const handleItemReturned = async (event, db, messaging) => {
   console.log(`Item ${itemId} returned/resolved`);
 
   try {
+    const prefsSnap = await db.collection("notificationPreferences").doc(after.reportedBy).get();
+    const prefs = prefsSnap.data() || {};
+    if (prefs.claimUpdates === false) return;
+
     const notification = {
       userId: after.reportedBy,
       title: "Item Resolved",
@@ -130,6 +134,38 @@ const handleItemReturned = async (event, db, messaging) => {
   }
 };
 
+const handleClaimSubmitted = async (event, db, messaging) => {
+  const claim = event.data?.data();
+  const claimId = event.params.claimId;
+  if (!claim) return;
+
+  console.log(`New claim submitted: ${claimId}`);
+
+  try {
+    const itemCol = claim.itemType === "found" ? "foundItems" : "lostItems";
+    const itemSnap = await db.collection(itemCol).doc(claim.itemId).get();
+    const item = itemSnap.data();
+
+    if (item?.reportedBy && item.reportedBy !== claim.claimantId) {
+      await db.collection("notifications").add({
+        userId: item.reportedBy,
+        title: "New Claim Submitted",
+        message: `${claim.claimantName || "Someone"} has submitted a claim for your item "${claim.itemTitle}".`,
+        type: "info",
+        read: false,
+        createdAt: new Date(),
+      });
+
+      await sendPushNotification(db, messaging, item.reportedBy, {
+        title: "New Claim Submitted",
+        body: `Someone claimed your "${claim.itemTitle}"`,
+      });
+    }
+  } catch (error) {
+    console.error("Error sending claim submitted notification:", error);
+  }
+};
+
 /**
  * Helper: Send FCM push notification to a user
  */
@@ -145,7 +181,6 @@ const sendPushNotification = async (db, messaging, userId, payload) => {
       data: { click_action: "/notifications" },
     });
   } catch (error) {
-    // Token may be expired or invalid — log but don't crash
     console.warn(`FCM send failed for user ${userId}:`, error.message);
   }
 };
@@ -154,4 +189,5 @@ module.exports = {
   handleMatchCreated,
   handleClaimStatusChanged,
   handleItemReturned,
+  handleClaimSubmitted,
 };

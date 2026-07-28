@@ -23,6 +23,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Analytics from "./pages/Analytics";
 import PWAInstallPrompt from "./components/common/PWAInstallPrompt";
 import Messages from "./pages/Messages";
+import InstallApp from "./pages/InstallApp";
 
 class ErrorBoundary extends React.Component {
   state = { hasError: false };
@@ -106,6 +107,7 @@ const App = () => (
             <Route path="/admin/items" element={<AppLayout><AdminRoute><AdminDashboard tab="items" /></AdminRoute></AppLayout>} />
             <Route path="/admin/claims" element={<AppLayout><AdminRoute><AdminDashboard tab="claims" /></AdminRoute></AppLayout>} />
             <Route path="/admin/users" element={<AppLayout><AdminRoute><AdminDashboard tab="users" /></AdminRoute></AppLayout>} />
+            <Route path="/install" element={<InstallApp />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </ItemsProvider>

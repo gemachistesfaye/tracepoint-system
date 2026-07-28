@@ -1,15 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../context/AuthContext";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { updateProfile } from "firebase/auth";
+import { uploadImage, deleteImage } from "../firebase/storage";
 import toast from "react-hot-toast";
-import { User, Loader2, Save, Edit3 } from "lucide-react";
+import { User, Loader2, Save, Edit3, Camera } from "lucide-react";
 
 const Profile = () => {
   const { currentUser, userProfile, fetchProfile } = useAuth();
   const [editing, setEditing] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(userProfile?.profileImage || null);
+  const fileInputRef = useRef(null);
+
   const { register, handleSubmit, formState: { isSubmitting } } = useForm({
     defaultValues: {
       name: userProfile?.name || "",
@@ -30,6 +35,36 @@ const Profile = () => {
     } catch { toast.error("Update failed."); }
   };
 
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be under 2MB");
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const tempPreview = URL.createObjectURL(file);
+      setPreviewUrl(tempPreview);
+
+      if (userProfile?.profileImage) {
+        try { await deleteImage(userProfile.profileImage); } catch {}
+      }
+
+      const result = await uploadImage(file, `profiles/${currentUser.uid}`);
+      await updateDoc(doc(db, "users", currentUser.uid), { profileImage: result.url });
+      await updateProfile(currentUser, { photoURL: result.url });
+      await fetchProfile(currentUser.uid);
+      setPreviewUrl(result.url);
+      toast.success("Profile photo updated!");
+    } catch {
+      setPreviewUrl(userProfile?.profileImage || null);
+      toast.error("Failed to upload photo.");
+    }
+    setUploadingPhoto(false);
+  };
+
   const inputClass = "w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all";
   const disabledClass = "w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-400 cursor-not-allowed";
 
@@ -45,20 +80,33 @@ const Profile = () => {
 
       <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
         <div className="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center text-2xl font-black text-white">
-            {userProfile?.name?.[0]?.toUpperCase() || "U"}
+          <div className="relative group">
+            {previewUrl ? (
+              <img src={previewUrl} alt="Profile" className="w-16 h-16 rounded-2xl object-cover border-2 border-gray-200" />
+            ) : (
+              <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center text-2xl font-black text-white">
+                {userProfile?.name?.[0]?.toUpperCase() || "U"}
+              </div>
+            )}
+            <button onClick={() => fileInputRef.current?.click()} disabled={uploadingPhoto}
+              className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              {uploadingPhoto ? <Loader2 size={18} className="animate-spin text-white" /> : <Camera size={18} className="text-white" />}
+            </button>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
           </div>
           <div>
             <p className="font-black text-gray-900 text-xl">{userProfile?.name}</p>
             <p className="text-sm text-gray-500">{userProfile?.email}</p>
             <span className={`text-xs font-bold px-2.5 py-1 rounded-full mt-1.5 inline-block ${
-              userProfile?.role === "admin" ? "bg-purple-50 text-purple-600" : "bg-primary-50 text-primary-600"
-            }`}>{userProfile?.role}</span>
+              userProfile?.role === "admin" ? "bg-purple-50 text-purple-600"
+              : userProfile?.role === "staff" ? "bg-blue-50 text-blue-600"
+              : "bg-primary-50 text-primary-600"
+            }`}>{userProfile?.role === "staff" ? "Staff" : userProfile?.role}</span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {[{ name: "name", label: "Full Name" }, { name: "studentId", label: "Student ID" }, { name: "phone", label: "Phone Number" }, { name: "department", label: "Department" }, { name: "college", label: "College" }].map(({ name, label }) => (
+          {[{ name: "name", label: "Full Name" }, { name: "studentId", label: "Student/Staff ID" }, { name: "phone", label: "Phone Number" }, { name: "department", label: "Department" }, { name: "college", label: "College" }].map(({ name, label }) => (
             <div key={name}>
               <label className="block text-sm font-medium text-gray-600 mb-1.5">{label}</label>
               <input type="text" disabled={!editing} className={editing ? inputClass : disabledClass} {...register(name)} />

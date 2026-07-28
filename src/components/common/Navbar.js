@@ -147,7 +147,7 @@ const Navbar = () => {
                                 <p className="text-xs text-gray-500 truncate">{userProfile?.email}</p>
                                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full mt-1 inline-block ${
                                   isAdmin ? "bg-purple-100 text-purple-600" : "bg-primary-100 text-primary-600"
-                                }`}>{isAdmin ? "Admin" : "Student"}</span>
+                                }`}>{isAdmin ? "Admin" : userProfile?.role === "staff" ? "Staff" : "Student"}</span>
                               </div>
                             </div>
                           </div>

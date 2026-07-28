@@ -17,7 +17,11 @@ service cloud.firestore {
     // ── LOST ITEMS ───────────────────────────────────────────────────────
     match /lostItems/{itemId} {
       allow read: if request.auth != null;
-      allow create: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.title != null
+        && request.resource.data.title != ""
+        && request.resource.data.category != null
+        && request.resource.data.reportedBy == request.auth.uid;
       allow update: if request.auth != null && (
         resource.data.reportedBy == request.auth.uid ||
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
@@ -31,7 +35,11 @@ service cloud.firestore {
     // ── FOUND ITEMS ──────────────────────────────────────────────────────
     match /foundItems/{itemId} {
       allow read: if request.auth != null;
-      allow create: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.title != null
+        && request.resource.data.title != ""
+        && request.resource.data.category != null
+        && request.resource.data.reportedBy == request.auth.uid;
       allow update: if request.auth != null && (
         resource.data.reportedBy == request.auth.uid ||
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
@@ -48,7 +56,9 @@ service cloud.firestore {
         resource.data.claimantId == request.auth.uid ||
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
       );
-      allow create: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.itemId != null
+        && request.resource.data.claimantId == request.auth.uid;
       allow update: if request.auth != null &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
       allow delete: if request.auth != null &&
@@ -58,7 +68,10 @@ service cloud.firestore {
     // ── MATCHES ──────────────────────────────────────────────────────────
     match /matches/{matchId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null &&
+      allow create: if request.auth != null;
+      allow update: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+      allow delete: if request.auth != null &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
     }
 
@@ -68,6 +81,12 @@ service cloud.firestore {
       allow create: if request.auth != null;
       allow update: if request.auth != null && resource.data.userId == request.auth.uid;
       allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // ── NOTIFICATION PREFERENCES ─────────────────────────────────────────
+    match /notificationPreferences/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
 
     // ── MESSAGES ─────────────────────────────────────────────────────────
@@ -95,6 +114,13 @@ service cloud.firestore {
     match /auditLogs/{logId} {
       allow read: if request.auth != null &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+      allow create: if request.auth != null;
+      allow delete: if false;
+    }
+
+    // ── RATE LIMITS ──────────────────────────────────────────────────────
+    match /rateLimits/{limitId} {
+      allow read: if request.auth != null;
       allow create: if request.auth != null;
       allow delete: if false;
     }

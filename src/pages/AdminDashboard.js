@@ -2,7 +2,7 @@ import React, { useEffect, useState, lazy, Suspense } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import {
-  getAllItems, getAllUsers, getAllClaims,
+  getAllItems, getAllUsers, getAllClaims, getStorageStats,
   updateClaim, updateItem, deleteItem, updateUserRole, addNotification,
 } from "../firebase/firestore";
 import AnalyticsDashboard from "../components/analytics/AnalyticsDashboard";
@@ -49,13 +49,14 @@ const AdminDashboard = () => {
 
   const [selectedClaim, setSelectedClaim] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [storageStats, setStorageStats] = useState(null);
 
   useEffect(() => { setTab(getTab()); }, [location.pathname]);
 
   const load = async () => {
     setLoading(true);
-    const [i, u, c] = await Promise.all([getAllItems(), getAllUsers(), getAllClaims()]);
-    setItems(i); setUsers(u); setClaims(c); setLoading(false);
+    const [i, u, c, s] = await Promise.all([getAllItems(), getAllUsers(), getAllClaims(), getStorageStats()]);
+    setItems(i); setUsers(u); setClaims(c); setStorageStats(s); setLoading(false);
   };
   useEffect(() => { load(); }, []);
 
@@ -260,6 +261,7 @@ const AdminDashboard = () => {
             { key:"claims", label:"Claims", icon:<FileText size={13}/>, badge: pendingClaims.length },
             { key:"items", label:"Items", icon:<Package size={13}/>, badge: items.length },
             { key:"users", label:"Users", icon:<Users size={13}/>, badge: users.length },
+            { key:"storage", label:"Storage", icon:<Package size={13}/> },
             { key:"audit", label:"Audit Log", icon:<Clock size={13}/> },
             { key:"analytics", label:"Analytics", icon:<TrendingUp size={13}/> },
           ].map(t => (
@@ -632,6 +634,40 @@ const AdminDashboard = () => {
             )}
 
             {tab==="analytics" && <AnalyticsDashboard />}
+
+            {tab==="storage" && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { label: "Total Item Images", value: storageStats?.totalItems || 0, icon: <Image size={18} />, color: "blue" },
+                    { label: "Lost Item Images", value: storageStats?.lostWithImages || 0, icon: <Package size={18} />, color: "red" },
+                    { label: "Found Item Images", value: storageStats?.foundWithImages || 0, icon: <Package size={18} />, color: "emerald" },
+                    { label: "Profile Images", value: storageStats?.totalProfiles || 0, icon: <Users size={18} />, color: "purple" },
+                  ].map(s => (
+                    <div key={s.label} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+                      <div className={`inline-flex p-2.5 rounded-xl mb-3 ${
+                        s.color==="blue"?"bg-blue-50 text-blue-600":s.color==="red"?"bg-red-50 text-red-600":
+                        s.color==="emerald"?"bg-emerald-50 text-emerald-600":"bg-purple-50 text-purple-600"
+                      }`}>{s.icon}</div>
+                      <p className="text-3xl font-black text-gray-900">{s.value}</p>
+                      <p className="text-sm text-gray-500 mt-1">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Package size={16} className="text-gray-400" />
+                    <h3 className="font-bold text-gray-900">Storage Information</h3>
+                  </div>
+                  <div className="space-y-3 text-sm text-gray-600">
+                    <p>Item images are stored in Firebase Storage under the <code className="bg-gray-100 px-2 py-0.5 rounded">items/</code> folder.</p>
+                    <p>Profile images are stored under <code className="bg-gray-100 px-2 py-0.5 rounded">profiles/</code> folder.</p>
+                    <p>Claim proof images are stored under <code className="bg-gray-100 px-2 py-0.5 rounded">claims/</code> folder.</p>
+                    <p>Message attachments are stored under <code className="bg-gray-100 px-2 py-0.5 rounded">messages/</code> folder.</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {tab==="audit" && (
               <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 size={24} className="animate-spin text-gray-400" /></div>}>

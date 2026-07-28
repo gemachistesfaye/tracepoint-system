@@ -1,4 +1,4 @@
-name: Deploy TracePoint to Firebase Hosting
+name: Deploy TracePoint to Firebase
 
 on:
   push:
@@ -33,13 +33,35 @@ jobs:
           REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
           REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
           REACT_APP_FIREBASE_MEASUREMENT_ID: ${{ secrets.REACT_APP_FIREBASE_MEASUREMENT_ID }}
-          REACT_APP_CLOUDINARY_CLOUD_NAME: ${{ secrets.REACT_APP_CLOUDINARY_CLOUD_NAME }}
-          REACT_APP_CLOUDINARY_UPLOAD_PRESET: ${{ secrets.REACT_APP_CLOUDINARY_UPLOAD_PRESET }}
+          REACT_APP_FIREBASE_VAPID_KEY: ${{ secrets.REACT_APP_FIREBASE_VAPID_KEY }}
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
       - name: Deploy to Firebase Hosting
         run: firebase deploy --only hosting --project tracepoint-system --token "$FIREBASE_TOKEN"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Install Functions dependencies
+        run: cd functions && npm ci
+
+      - name: Deploy Cloud Functions
+        run: firebase deploy --only functions --project tracepoint-system --token "$FIREBASE_TOKEN"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Deploy Firestore Rules
+        run: firebase deploy --only firestore:rules --project tracepoint-system --token "$FIREBASE_TOKEN"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Deploy Firestore Indexes
+        run: firebase deploy --only firestore:indexes --project tracepoint-system --token "$FIREBASE_TOKEN"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Deploy Storage Rules
+        run: firebase deploy --only storage --project tracepoint-system --token "$FIREBASE_TOKEN"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

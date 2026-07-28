@@ -1,12 +1,13 @@
 {
-  "short_name": "TracePoint",
-  "name": "TracePoint - HU Lost & Found",
-  "description": "Smart lost & found platform for Haramaya University campus",
+  "short_name": "HU Lost&Found",
+  "name": "TracePoint - Haramaya University Lost & Found",
+  "description": "Smart lost & found platform for Haramaya University campus. Report, search, and recover lost items with AI-powered matching.",
   "icons": [
     {
       "src": "favicon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
       "src": "logo192.png",
@@ -33,15 +34,32 @@
       "purpose": "maskable"
     }
   ],
-  "id": "/",
-  "start_url": "/",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "theme_color": "#2563eb",
   "background_color": "#0a0f1e",
   "orientation": "any",
   "categories": ["utilities", "education"],
   "lang": "en",
-  "screenshots": []
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "asset/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard - Track your lost and found items"
+    },
+    {
+      "src": "asset/landing.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Welcome to TracePoint"
+    }
+  ]
 }
