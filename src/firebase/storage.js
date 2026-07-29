@@ -10,6 +10,7 @@ import {
   deleteObject,
 } from "firebase/storage";
 import { storage } from "./config";
+import { compressImage, generateThumbnail } from "../utils/helpers";
 
 /**
  * Upload an image to Firebase Storage
@@ -48,6 +49,32 @@ export const uploadImage = (file, folder = "items", onProgress) => {
       }
     );
   });
+};
+
+/**
+ * Upload an image with a thumbnail variant
+ * @param {File} file - Image file
+ * @param {string} folder - Storage folder
+ * @param {function} onProgress - Progress callback (0-100)
+ * @returns {{ url: string, path: string, thumbnailUrl: string, thumbnailPath: string }}
+ */
+export const uploadImageWithThumbnail = async (file, folder = "items", onProgress) => {
+  const [compressed, thumbnail] = await Promise.all([
+    compressImage(file, 1200, 0.8),
+    generateThumbnail(file, 400, 0.75),
+  ]);
+
+  const [fullResult, thumbResult] = await Promise.all([
+    uploadImage(compressed, folder, onProgress),
+    uploadImage(thumbnail, `${folder}/thumbnails`),
+  ]);
+
+  return {
+    url: fullResult.url,
+    path: fullResult.path,
+    thumbnailUrl: thumbResult.url,
+    thumbnailPath: thumbResult.path,
+  };
 };
 
 /**

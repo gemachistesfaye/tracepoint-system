@@ -7,10 +7,11 @@ const ItemCard = ({ item }) => {
   const isLost = item.type === "lost";
   return (
     <Link to={`/items/${item.id}`}
-      className="block bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-primary-300 hover:shadow-md transition-all duration-200 group">
+      className="block bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-primary-300 hover:shadow-md transition-all duration-200 group focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+      aria-label={`${item.type === "lost" ? "Lost" : "Found"} item: ${item.title}, ${item.category}, ${item.location}`}>
       <div className="relative h-44 bg-gray-100 overflow-hidden">
         {item.imageUrl ? (
-          <img src={item.imageUrl} alt={item.title}
+          <img src={item.thumbnailUrl || item.imageUrl} alt={item.title} loading="lazy" width="380" height="176"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getAllItems, getAllClaims } from "../firebase/firestore";
+import { getLostItemsPaginated, getFoundItemsPaginated, getAllClaims } from "../firebase/firestore";
 import ItemCard from "../components/items/ItemCard";
 import { formatDate } from "../utils/helpers";
 import { Loader2, Package, FileText } from "lucide-react";
@@ -14,8 +14,16 @@ const MyItems = () => {
 
   useEffect(() => {
     const load = async () => {
-      const [items, claims] = await Promise.all([getAllItems(), getAllClaims({ claimantId: currentUser.uid })]);
-      setMyItems(items.filter(i => i.reportedBy === currentUser.uid));
+      const [lostResult, foundResult, claims] = await Promise.all([
+        getLostItemsPaginated(100, null, { reportedBy: currentUser.uid }),
+        getFoundItemsPaginated(100, null, { reportedBy: currentUser.uid }),
+        getAllClaims({ claimantId: currentUser.uid }),
+      ]);
+      setMyItems([...lostResult.items, ...foundResult.items].sort((a, b) => {
+        const da = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+        const db = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+        return db - da;
+      }));
       setMyClaims(claims);
       setLoading(false);
     };

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useItems } from "../context/ItemsContext";
 import ItemCard from "../components/items/ItemCard";
+import { ItemCardSkeleton } from "../components/common/Skeletons";
 import { CATEGORIES, LOCATIONS, searchItems } from "../utils/helpers";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 
@@ -30,7 +31,7 @@ const ItemsList = () => {
           <span className={`w-3 h-3 rounded-full ${type === "lost" ? "bg-red-500" : "bg-emerald-500"}`} />
           <h1 className="text-3xl font-black text-gray-900 capitalize">{type} Items</h1>
         </div>
-        <p className="text-gray-500 text-sm">{filtered.length} item{filtered.length !== 1 ? "s" : ""} found</p>
+        <p className="text-gray-500 text-sm" aria-live="polite">{filtered.length} item{filtered.length !== 1 ? "s" : ""} found</p>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm">
@@ -42,9 +43,9 @@ const ItemsList = () => {
               className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500" />
           </div>
           <button onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ${
               showFilters ? "border-primary-500 bg-primary-50 text-primary-600" : "border-gray-200 text-gray-500 hover:bg-gray-50"
-            }`}>
+            }`} aria-label={showFilters ? "Hide filters" : "Show filters"} aria-expanded={showFilters}>
             <SlidersHorizontal size={16} /> Filters
             {hasFilters && <span className="w-2 h-2 bg-primary-500 rounded-full" />}
           </button>
@@ -77,7 +78,7 @@ const ItemsList = () => {
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {[...Array(8)].map((_, i) => <div key={i} className="bg-gray-100 rounded-2xl h-64 animate-pulse" />)}
+          {[...Array(8)].map((_, i) => <ItemCardSkeleton key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-gray-400">

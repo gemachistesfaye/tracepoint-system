@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
 import { addItem } from "../../firebase/firestore";
-import { uploadImage } from "../../firebase/storage";
+import { uploadImageWithThumbnail } from "../../firebase/storage";
 import { CATEGORIES, LOCATIONS } from "../../utils/helpers";
 import toast from "react-hot-toast";
 import { Upload, X, Loader2 } from "lucide-react";
@@ -40,12 +40,14 @@ const ReportItemForm = () => {
     try {
       let imageUrl = null;
       let imagePath = null;
+      let thumbnailUrl = null;
 
       if (imageFile) {
         setUploading(true);
-        const result = await uploadImage(imageFile, "items", setUploadProgress);
+        const result = await uploadImageWithThumbnail(imageFile, "items", setUploadProgress);
         imageUrl = result.url;
         imagePath = result.path;
+        thumbnailUrl = result.thumbnailUrl;
         setUploading(false);
       }
 
@@ -53,6 +55,7 @@ const ReportItemForm = () => {
         ...data,
         imageUrl,
         imagePath,
+        thumbnailUrl,
         reportedBy: currentUser.uid,
         reporterName: userProfile?.name || currentUser.displayName,
         reporterContact: data.contact || userProfile?.phone || "",

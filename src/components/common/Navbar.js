@@ -119,7 +119,8 @@ const Navbar = () => {
 
                   <div className="relative">
                     <button onClick={() => setUserMenuOpen(!userMenuOpen)}
-                      className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 px-3 py-2 rounded-xl transition-colors">
+                      className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 px-3 py-2 rounded-xl transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                      aria-label="User menu" aria-expanded={userMenuOpen}>
                       <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-xs ${
                         isAdmin ? "bg-gradient-to-br from-purple-500 to-indigo-600" : "bg-gradient-to-br from-primary-500 to-primary-700"
                       }`}>
@@ -196,8 +197,9 @@ const Navbar = () => {
                 </div>
               )}
 
-              <button className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
-                onClick={() => setMenuOpen(!menuOpen)}>
+              <button className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                onClick={() => setMenuOpen(!menuOpen)}
+                aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen}>
                 {menuOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>

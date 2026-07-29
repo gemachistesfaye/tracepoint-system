@@ -189,6 +189,40 @@ export const getAllItems = async (filters = {}) => {
   return filters.limit ? allItems.slice(0, filters.limit) : allItems;
 };
 
+export const getRecentItems = async (maxPerCollection = 100) => {
+  const [lostItems, foundItems] = await Promise.all([
+    getLostItems({ limit: maxPerCollection }),
+    getFoundItems({ limit: maxPerCollection }),
+  ]);
+
+  const allItems = [...lostItems, ...foundItems];
+  allItems.sort((a, b) => {
+    const da = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+    const db = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+    return db - da;
+  });
+
+  return allItems;
+};
+
+export const getPaginatedItems = async (pageSize = 20, lastDoc = null, filters = {}) => {
+  const [lostResult, foundResult] = await Promise.all([
+    getLostItemsPaginated(pageSize, lastDoc, filters),
+    getFoundItemsPaginated(pageSize, lastDoc, filters),
+  ]);
+
+  const allItems = [...lostResult.items, ...foundResult.items];
+  allItems.sort((a, b) => {
+    const da = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+    const db = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+    return db - da;
+  });
+
+  const sliced = allItems.slice(0, pageSize);
+  const lastVisible = lostResult.lastDoc || foundResult.lastDoc;
+  return { items: sliced, lastDoc: lastVisible, hasMore: allItems.length > pageSize };
+};
+
 export const subscribeToItems = (callback, filters = {}) => {
   let lostUnsub = null;
   let foundUnsub = null;
@@ -258,6 +292,21 @@ export const getAllClaims = async (filters = {}) => {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 };
 
+export const getPaginatedClaims = async (pageSize = 20, lastDoc = null, filters = {}) => {
+  let q = collection(db, "claims");
+  const constraints = [orderBy("createdAt", "desc"), limit(pageSize)];
+
+  if (filters.status) constraints.unshift(where("status", "==", filters.status));
+  if (filters.itemId) constraints.unshift(where("itemId", "==", filters.itemId));
+  if (filters.claimantId) constraints.unshift(where("claimantId", "==", filters.claimantId));
+  if (lastDoc) constraints.push(startAfter(lastDoc));
+
+  const snap = await getDocs(query(q, ...constraints));
+  const claims = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const lastVisible = snap.docs[snap.docs.length - 1] || null;
+  return { claims, lastDoc: lastVisible, hasMore: snap.docs.length === pageSize };
+};
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // MATCHES
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -321,6 +370,20 @@ export const getUserProfile = async (uid) => {
 export const getAllUsers = async () => {
   const snap = await getDocs(collection(db, "users"));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+};
+
+export const getPaginatedUsers = async (pageSize = 20, lastDoc = null) => {
+  const constraints = [orderBy("createdAt", "desc"), limit(pageSize)];
+  if (lastDoc) constraints.push(startAfter(lastDoc));
+  const snap = await getDocs(query(collection(db, "users"), ...constraints));
+  const users = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const lastVisible = snap.docs[snap.docs.length - 1] || null;
+  return { users, lastDoc: lastVisible, hasMore: snap.docs.length === pageSize };
+};
+
+export const getUserCount = async () => {
+  const snap = await getDocs(query(collection(db, "users"), limit(1)));
+  return snap.size;
 };
 
 export const updateUserProfile = async (uid, data) => {
@@ -618,20 +681,28 @@ export const subscribeToAuditLogs = (callback, filters = {}) => {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export const getStorageStats = async () => {
-  const [lostItems, foundItems, users] = await Promise.all([
-    getLostItems(),
-    getFoundItems(),
-    getAllUsers(),
+  const [lostSnap, foundSnap, usersSnap, lostImgSnap, foundImgSnap, profilesSnap] = await Promise.all([
+    getDocs(query(collection(db, "lostItems"), limit(1))),
+    getDocs(query(collection(db, "foundItems"), limit(1))),
+    getDocs(query(collection(db, "users"), limit(1))),
+    getDocs(query(collection(db, "lostItems"), where("imagePath", "!=", null), limit(1))),
+    getDocs(query(collection(db, "foundItems"), where("imagePath", "!=", null), limit(1))),
+    getDocs(query(collection(db, "users"), where("profileImage", "!=", null), limit(1))),
   ]);
 
-  const itemsWithImages = [...lostItems, ...foundItems].filter(i => i.imagePath);
-  const usersWithImages = users.filter(u => u.profileImage);
+  const [lostCount, foundCount, userCount, lostImgCount, foundImgCount, profilesCount] = await Promise.all([
+    lostSnap.size, foundSnap.size, usersSnap.size,
+    lostImgSnap.size, foundImgSnap.size, profilesSnap.size,
+  ]);
 
   return {
-    totalItems: itemsWithImages.length,
-    totalProfiles: usersWithImages.length,
-    lostWithImages: lostItems.filter(i => i.imagePath).length,
-    foundWithImages: foundItems.filter(i => i.imagePath).length,
+    totalItems: lostImgCount + foundImgCount,
+    totalProfiles: profilesCount,
+    lostWithImages: lostImgCount,
+    foundWithImages: foundImgCount,
+    totalLostItems: lostCount,
+    totalFoundItems: foundCount,
+    totalUsers: userCount,
   };
 };
 
@@ -669,27 +740,41 @@ export const checkRateLimit = async (userId, action, maxRequests, windowMinutes)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export const sendAdminAnnouncement = async (title, message, targetRole = "all") => {
-  let users;
-  if (targetRole === "all") {
-    users = await getAllUsers();
-  } else {
-    const snap = await getDocs(query(collection(db, "users"), where("role", "==", targetRole)));
-    users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  let allUsers = [];
+  let lastDoc = null;
+  let hasMore = true;
+
+  while (hasMore) {
+    const constraints = [orderBy("createdAt", "desc"), limit(100)];
+    if (targetRole !== "all") constraints.unshift(where("role", "==", targetRole));
+    if (lastDoc) constraints.push(startAfter(lastDoc));
+
+    const snap = await getDocs(query(collection(db, "users"), ...constraints));
+    const batch_users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    allUsers = [...allUsers, ...batch_users];
+    lastDoc = snap.docs[snap.docs.length - 1] || null;
+    hasMore = snap.docs.length === 100;
+
+    if (allUsers.length > 5000) break;
   }
 
-  const batch = writeBatch(db);
-  for (const user of users) {
-    const notifRef = doc(collection(db, "notifications"));
-    batch.set(notifRef, {
-      userId: user.id,
-      title,
-      message,
-      type: "announcement",
-      read: false,
-      createdAt: serverTimestamp(),
-    });
+  const BATCH_SIZE = 500;
+  for (let i = 0; i < allUsers.length; i += BATCH_SIZE) {
+    const batch = writeBatch(db);
+    const chunk = allUsers.slice(i, i + BATCH_SIZE);
+    for (const user of chunk) {
+      const notifRef = doc(collection(db, "notifications"));
+      batch.set(notifRef, {
+        userId: user.id,
+        title,
+        message,
+        type: "announcement",
+        read: false,
+        createdAt: serverTimestamp(),
+      });
+    }
+    await batch.commit();
   }
-  await batch.commit();
 
-  return users.length;
+  return allUsers.length;
 };

@@ -2,10 +2,11 @@ import React, { useState, lazy, Suspense, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../context/AuthContext";
-import { addItem, getAllItems } from "../firebase/firestore";
-import { uploadImage } from "../firebase/storage";
+import { addItem, getRecentItems } from "../firebase/firestore";
+import { uploadImageWithThumbnail } from "../firebase/storage";
 import { CATEGORIES } from "../utils/helpers";
 import { findDuplicates } from "../utils/matching";
+import { trackItemReported } from "../utils/logger";
 import toast from "react-hot-toast";
 import { Upload, X, Loader2, PlusCircle, MapPin, AlertTriangle } from "lucide-react";
 import { CAMPUS_LOCATIONS } from "../components/map/CampusMap";
@@ -75,9 +76,9 @@ const ReportItem = () => {
   const checkDuplicates = async () => {
     if (!titleWatch || titleWatch.length < 5) return;
     try {
-      const allItems = await getAllItems();
+      const recentItems = await getRecentItems(100);
       const fakeItem = { title: titleWatch, description: descWatch, type: itemType, category: categoryWatch, location: selectedLocation };
-      const dups = findDuplicates(fakeItem, allItems, 55);
+      const dups = findDuplicates(fakeItem, recentItems, 55);
       setDuplicateWarning(dups.length > 0 ? dups[0] : null);
     } catch (e) {
       console.error("Duplicate check failed:", e);
@@ -103,20 +104,21 @@ const ReportItem = () => {
   const onSubmit = async (data) => {
     if (!selectedLocation) { toast.error("Please select a location on the map"); return; }
     try {
-      let imageUrl = null, imagePath = null;
+      let imageUrl = null, imagePath = null, thumbnailUrl = null;
       if (imageFile) {
         setUploading(true);
-        const result = await uploadImage(imageFile, "tracepoint/items", setUploadProgress);
-        imageUrl = result.url; imagePath = result.path;
+        const result = await uploadImageWithThumbnail(imageFile, "tracepoint/items", setUploadProgress);
+        imageUrl = result.url; imagePath = result.path; thumbnailUrl = result.thumbnailUrl;
         setUploading(false);
       }
       await addItem({
-        ...data, location: selectedLocation, imageUrl, imagePath,
+        ...data, location: selectedLocation, imageUrl, imagePath, thumbnailUrl,
         reportedBy: currentUser.uid,
         reporterName: userProfile?.name || currentUser.displayName,
         reporterContact: data.contact || userProfile?.phone || "",
       });
       localStorage.removeItem("reportDraft");
+      trackItemReported(data.category, selectedLocation);
       toast.success("Item reported successfully!");
       navigate(data.type === "lost" ? "/items/lost" : "/items/found");
     } catch (err) {

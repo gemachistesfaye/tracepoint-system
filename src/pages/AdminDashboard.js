@@ -1,11 +1,11 @@
-import React, { useEffect, useState, lazy, Suspense } from "react";
+import React, { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import {
-  getAllItems, getAllUsers, getAllClaims, getStorageStats,
-  updateClaim, updateItem, deleteItem, updateUserRole, addNotification,
+  getPaginatedItems, getPaginatedClaims, getPaginatedUsers,
+  getStorageStats, updateClaim, updateItem, deleteItem,
+  updateUserRole, addNotification,
 } from "../firebase/firestore";
-import AnalyticsDashboard from "../components/analytics/AnalyticsDashboard";
 import { formatDate, timeAgo } from "../utils/helpers";
 import toast from "react-hot-toast";
 import {
@@ -18,6 +18,10 @@ import {
 
 const CampusMap = lazy(() => import("../components/map/CampusMap"));
 const AuditLog = lazy(() => import("../components/admin/AuditLog"));
+const AnalyticsDashboard = lazy(() => import("../components/analytics/AnalyticsDashboard"));
+const ActivityTimeline = lazy(() => import("../components/admin/ActivityTimeline"));
+
+const PAGE_SIZE = 25;
 
 const AdminDashboard = () => {
   const location = useLocation();
@@ -31,11 +35,25 @@ const AdminDashboard = () => {
   };
 
   const [tab, setTab] = useState(getTab());
-  const [items, setItems] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [claims, setClaims] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
+
+  const [items, setItems] = useState([]);
+  const [itemsLastDoc, setItemsLastDoc] = useState(null);
+  const [hasMoreItems, setHasMoreItems] = useState(true);
+  const [loadingItems, setLoadingItems] = useState(false);
+
+  const [users, setUsers] = useState([]);
+  const [usersLastDoc, setUsersLastDoc] = useState(null);
+  const [hasMoreUsers, setHasMoreUsers] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
+  const [claims, setClaims] = useState([]);
+  const [claimsLastDoc, setClaimsLastDoc] = useState(null);
+  const [hasMoreClaims, setHasMoreClaims] = useState(true);
+  const [loadingClaims, setLoadingClaims] = useState(false);
+
+  const [storageStats, setStorageStats] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
 
   const [itemSearch, setItemSearch] = useState("");
@@ -48,17 +66,82 @@ const AdminDashboard = () => {
   const [dateTo, setDateTo] = useState("");
 
   const [selectedClaim, setSelectedClaim] = useState(null);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [storageStats, setStorageStats] = useState(null);
+  const [selectedItem, setSelectedSelectedItem] = useState(null);
 
   useEffect(() => { setTab(getTab()); }, [location.pathname]);
 
-  const load = async () => {
+  const loadOverview = useCallback(async () => {
     setLoading(true);
-    const [i, u, c, s] = await Promise.all([getAllItems(), getAllUsers(), getAllClaims(), getStorageStats()]);
-    setItems(i); setUsers(u); setClaims(c); setStorageStats(s); setLoading(false);
-  };
-  useEffect(() => { load(); }, []);
+    try {
+      const [itemsResult, claimsResult, usersResult, stats] = await Promise.all([
+        getPaginatedItems(PAGE_SIZE),
+        getPaginatedClaims(PAGE_SIZE),
+        getPaginatedUsers(PAGE_SIZE),
+        getStorageStats(),
+      ]);
+      setItems(itemsResult.items);
+      setItemsLastDoc(itemsResult.lastDoc);
+      setHasMoreItems(itemsResult.hasMore);
+      setClaims(claimsResult.claims);
+      setClaimsLastDoc(claimsResult.lastDoc);
+      setHasMoreClaims(claimsResult.hasMore);
+      setUsers(usersResult.users);
+      setUsersLastDoc(usersResult.lastDoc);
+      setHasMoreUsers(usersResult.hasMore);
+      setStorageStats(stats);
+    } catch (err) {
+      console.error("Failed to load admin overview:", err);
+      toast.error("Could not load dashboard data. Check your connection and try again.");
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { loadOverview(); }, [loadOverview]);
+
+  const loadMoreItems = useCallback(async () => {
+    if (loadingItems || !hasMoreItems || !itemsLastDoc) return;
+    setLoadingItems(true);
+    try {
+      const result = await getPaginatedItems(PAGE_SIZE, itemsLastDoc, {
+        type: itemTypeFilter || undefined,
+        status: itemStatusFilter || undefined,
+      });
+      setItems(prev => [...prev, ...result.items]);
+      setItemsLastDoc(result.lastDoc);
+      setHasMoreItems(result.hasMore);
+    } catch {
+      toast.error("Could not load more items. Please try again.");
+    }
+    setLoadingItems(false);
+  }, [loadingItems, hasMoreItems, itemsLastDoc, itemTypeFilter, itemStatusFilter]);
+
+  const loadMoreClaims = useCallback(async () => {
+    if (loadingClaims || !hasMoreClaims || !claimsLastDoc) return;
+    setLoadingClaims(true);
+    try {
+      const result = await getPaginatedClaims(PAGE_SIZE, claimsLastDoc);
+      setClaims(prev => [...prev, ...result.claims]);
+      setClaimsLastDoc(result.lastDoc);
+      setHasMoreClaims(result.hasMore);
+    } catch {
+      toast.error("Could not load more claims. Please try again.");
+    }
+    setLoadingClaims(false);
+  }, [loadingClaims, hasMoreClaims, claimsLastDoc]);
+
+  const loadMoreUsers = useCallback(async () => {
+    if (loadingUsers || !hasMoreUsers || !usersLastDoc) return;
+    setLoadingUsers(true);
+    try {
+      const result = await getPaginatedUsers(PAGE_SIZE, usersLastDoc);
+      setUsers(prev => [...prev, ...result.users]);
+      setUsersLastDoc(result.lastDoc);
+      setHasMoreUsers(result.hasMore);
+    } catch {
+      toast.error("Could not load more users. Please try again.");
+    }
+    setLoadingUsers(false);
+  }, [loadingUsers, hasMoreUsers, usersLastDoc]);
 
   const switchTab = (key) => {
     setTab(key);
@@ -80,31 +163,40 @@ const AdminDashboard = () => {
         await addNotification(claim.claimantId,
           `Your claim for "${claim.itemTitle}" was rejected. Please contact admin for details.`, "error");
       }
-      toast.success(`Claim ${action}`);
+      toast.success(`Claim ${action === "approved" ? "approved" : "rejected"} successfully`);
       setSelectedClaim(null);
-      await load();
-    } catch { toast.error("Action failed"); }
+      setClaims(prev => prev.map(c => c.id === claim.id ? { ...c, status: action } : c));
+    } catch {
+      toast.error("Could not process claim. Check your connection and try again.");
+    }
     setProcessingId(null);
   };
 
   const handleDeleteItem = async (item) => {
-    if (!window.confirm(`Delete "${item.title}"?`)) return;
+    if (!window.confirm(`Delete "${item.title}"? This action cannot be undone.`)) return;
     setProcessingId(item.id);
-    try { await deleteItem(item.id, item.type); toast.success("Deleted"); await load(); }
-    catch { toast.error("Delete failed"); }
+    try {
+      await deleteItem(item.id, item.type);
+      toast.success("Item deleted successfully");
+      setItems(prev => prev.filter(i => i.id !== item.id));
+    } catch {
+      toast.error("Could not delete item. You may not have permission.");
+    }
     setProcessingId(null);
   };
 
   const handleBulkDelete = async () => {
-    if (!window.confirm(`Delete ${selectedIds.length} items?`)) return;
+    if (!window.confirm(`Delete ${selectedIds.length} items? This action cannot be undone.`)) return;
     setProcessingId("bulk");
     try {
       const toDelete = items.filter(i => selectedIds.includes(i.id));
       await Promise.all(toDelete.map(i => deleteItem(i.id, i.type)));
       toast.success(`${selectedIds.length} items deleted`);
       setSelectedIds([]);
-      await load();
-    } catch { toast.error("Bulk delete failed"); }
+      setItems(prev => prev.filter(i => !selectedIds.includes(i.id)));
+    } catch {
+      toast.error("Some items could not be deleted. Try deleting individually.");
+    }
     setProcessingId(null);
   };
 
@@ -116,8 +208,10 @@ const AdminDashboard = () => {
       await Promise.all(toResolve.map(i => updateItem(i.id, { status: "resolved" }, i.type)));
       toast.success(`${selectedIds.length} items resolved`);
       setSelectedIds([]);
-      await load();
-    } catch { toast.error("Bulk resolve failed"); }
+      setItems(prev => prev.map(i => selectedIds.includes(i.id) ? { ...i, status: "resolved" } : i));
+    } catch {
+      toast.error("Some items could not be resolved. Try processing individually.");
+    }
     setProcessingId(null);
   };
 
@@ -125,8 +219,13 @@ const AdminDashboard = () => {
     const newRole = user.role === "admin" ? "user" : "admin";
     if (!window.confirm(`Change ${user.name} to ${newRole}?`)) return;
     setProcessingId(user.id);
-    try { await updateUserRole(user.id, newRole); toast.success(`${user.name} -> ${newRole}`); await load(); }
-    catch { toast.error("Failed"); }
+    try {
+      await updateUserRole(user.id, newRole);
+      toast.success(`${user.name} updated to ${newRole}`);
+      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, role: newRole } : u));
+    } catch {
+      toast.error("Could not update user role. Check your connection and try again.");
+    }
     setProcessingId(null);
   };
 
@@ -259,9 +358,10 @@ const AdminDashboard = () => {
           {[
             { key:"overview", label:"Overview", icon:<BarChart3 size={13}/> },
             { key:"claims", label:"Claims", icon:<FileText size={13}/>, badge: pendingClaims.length },
-            { key:"items", label:"Items", icon:<Package size={13}/>, badge: items.length },
-            { key:"users", label:"Users", icon:<Users size={13}/>, badge: users.length },
+            { key:"items", label:"Items", icon:<Package size={13}/> },
+            { key:"users", label:"Users", icon:<Users size={13}/> },
             { key:"storage", label:"Storage", icon:<Package size={13}/> },
+            { key:"timeline", label:"Activity", icon:<Clock size={13}/> },
             { key:"audit", label:"Audit Log", icon:<Clock size={13}/> },
             { key:"analytics", label:"Analytics", icon:<TrendingUp size={13}/> },
           ].map(t => (
@@ -280,8 +380,18 @@ const AdminDashboard = () => {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 size={32} className="animate-spin text-primary-500" />
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse">
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 bg-gray-200 rounded-xl" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-1/3" />
+                    <div className="h-3 bg-gray-200 rounded w-1/2" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <>
@@ -332,7 +442,7 @@ const AdminDashboard = () => {
                     {items.slice(0,10).map(item => (
                       <div key={item.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
                         {item.imageUrl ? (
-                          <img src={item.imageUrl} alt="" className="w-10 h-10 rounded-xl object-cover border border-gray-200 shrink-0"/>
+                          <img src={item.imageUrl} alt={`${item.title}`} className="w-10 h-10 rounded-xl object-cover border border-gray-200 shrink-0" width="40" height="40" loading="lazy"/>
                         ) : (
                           <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
                             <Package size={16} className="text-gray-400"/>
@@ -391,9 +501,9 @@ const AdminDashboard = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead><tr>
-                        <th className={th}>Item</th><th className={th}>Claimant</th>
-                        <th className={th}>Proof</th><th className={th}>Date</th>
-                        <th className={th}>Status</th><th className={th}>Actions</th>
+                        <th scope="col" className={th}>Item</th><th scope="col" className={th}>Claimant</th>
+                        <th scope="col" className={th}>Proof</th><th scope="col" className={th}>Date</th>
+                        <th scope="col" className={th}>Status</th><th scope="col" className={th}>Actions</th>
                       </tr></thead>
                       <tbody className="divide-y divide-gray-100">
                         {filteredClaims.length===0 ? (
@@ -421,11 +531,11 @@ const AdminDashboard = () => {
                               {claim.status==="pending" && (
                                 <div className="flex gap-2">
                                   <button onClick={()=>handleClaim(claim,"approved")} disabled={processingId===claim.id}
-                                    className="flex items-center gap-1 text-xs bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 disabled:opacity-50 font-semibold transition-colors">
+                                    className="flex items-center gap-1 text-xs bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 disabled:opacity-50 font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2">
                                     {processingId===claim.id?<Loader2 size={11} className="animate-spin"/>:<CheckCircle size={11}/>} Approve
                                   </button>
                                   <button onClick={()=>handleClaim(claim,"rejected")} disabled={processingId===claim.id}
-                                    className="flex items-center gap-1 text-xs bg-red-50 text-red-500 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-100 disabled:opacity-50 font-semibold transition-colors">
+                                    className="flex items-center gap-1 text-xs bg-red-50 text-red-500 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-100 disabled:opacity-50 font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2">
                                     <XCircle size={11}/> Reject
                                   </button>
                                 </div>
@@ -436,6 +546,14 @@ const AdminDashboard = () => {
                       </tbody>
                     </table>
                   </div>
+                  {hasMoreClaims && (
+                    <div className="p-4 border-t border-gray-100 text-center">
+                      <button onClick={loadMoreClaims} disabled={loadingClaims}
+                        className="text-sm text-primary-600 hover:text-primary-700 font-semibold disabled:opacity-50">
+                        {loadingClaims ? <Loader2 size={16} className="animate-spin inline" /> : "Load more claims"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -490,15 +608,15 @@ const AdminDashboard = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead><tr>
-                        <th className={`${th} w-10`}>
+                        <th scope="col" className={`${th} w-10`}>
                           <input type="checkbox" className="rounded"
                             checked={selectedIds.length===filteredItems.length && filteredItems.length>0}
                             onChange={e => setSelectedIds(e.target.checked ? filteredItems.map(i=>i.id) : [])}/>
                         </th>
-                        <th className={th}>Item</th><th className={th}>Type</th>
-                        <th className={th}>Category</th><th className={th}>Location</th>
-                        <th className={th}>Reporter</th><th className={th}>Status</th>
-                        <th className={th}>Date</th><th className={th}>Actions</th>
+                        <th scope="col" className={th}>Item</th><th scope="col" className={th}>Type</th>
+                        <th scope="col" className={th}>Category</th><th scope="col" className={th}>Location</th>
+                        <th scope="col" className={th}>Reporter</th><th scope="col" className={th}>Status</th>
+                        <th scope="col" className={th}>Date</th><th scope="col" className={th}>Actions</th>
                       </tr></thead>
                       <tbody className="divide-y divide-gray-100">
                         {filteredItems.length===0 ? (
@@ -513,8 +631,8 @@ const AdminDashboard = () => {
                             <td className={td}>
                               <div className="flex items-center gap-2">
                                 {item.imageUrl ? (
-                                  <img src={item.imageUrl} alt="" className="w-9 h-9 rounded-lg object-cover border border-gray-200 shrink-0 cursor-pointer"
-                                    onClick={()=>setSelectedItem(item)}/>
+                                  <img src={item.imageUrl} alt={item.title} loading="lazy" width="36" height="36" className="w-9 h-9 rounded-lg object-cover border border-gray-200 shrink-0 cursor-pointer"
+                                    onClick={()=>setSelectedSelectedItem(item)}/>
                                 ) : (
                                   <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
                                     <Image size={13} className="text-gray-400"/>
@@ -541,11 +659,11 @@ const AdminDashboard = () => {
                             <td className={td}>
                               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <a href={`/items/${item.id}`} target="_blank" rel="noreferrer"
-                                  className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                                  className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2" aria-label={`View ${item.title}`}>
                                   <Eye size={13}/>
                                 </a>
                                 <button onClick={()=>handleDeleteItem(item)} disabled={processingId===item.id}
-                                  className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50">
+                                  className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2" aria-label={`Delete ${item.title}`}>
                                   {processingId===item.id?<Loader2 size={13} className="animate-spin"/>:<Trash2 size={13}/>}
                                 </button>
                               </div>
@@ -555,6 +673,14 @@ const AdminDashboard = () => {
                       </tbody>
                     </table>
                   </div>
+                  {hasMoreItems && (
+                    <div className="p-4 border-t border-gray-100 text-center">
+                      <button onClick={loadMoreItems} disabled={loadingItems}
+                        className="text-sm text-primary-600 hover:text-primary-700 font-semibold disabled:opacity-50">
+                        {loadingItems ? <Loader2 size={16} className="animate-spin inline" /> : "Load more items"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -582,9 +708,9 @@ const AdminDashboard = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead><tr>
-                        <th className={th}>User</th><th className={th}>Student ID</th>
-                        <th className={th}>Phone</th><th className={th}>Items</th>
-                        <th className={th}>Role</th><th className={th}>Actions</th>
+                        <th scope="col" className={th}>User</th><th scope="col" className={th}>Student ID</th>
+                        <th scope="col" className={th}>Phone</th><th scope="col" className={th}>Items</th>
+                        <th scope="col" className={th}>Role</th><th scope="col" className={th}>Actions</th>
                       </tr></thead>
                       <tbody className="divide-y divide-gray-100">
                         {filteredUsers.length===0 ? (
@@ -616,7 +742,7 @@ const AdminDashboard = () => {
                               </td>
                               <td className={td}>
                                 <button onClick={()=>toggleRole(user)} disabled={processingId===user.id}
-                                  className={`flex items-center gap-1.5 text-xs border px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-semibold ${
+                                  className={`flex items-center gap-1.5 text-xs border px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-semibold focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ${
                                     user.role==="admin"?"border-red-200 text-red-500 hover:bg-red-50":"border-primary-200 text-primary-600 hover:bg-primary-50"
                                   }`}>
                                   {processingId===user.id?<Loader2 size={11} className="animate-spin"/>:user.role==="admin"?<ShieldOff size={11}/>:<Shield size={11}/>}
@@ -629,11 +755,23 @@ const AdminDashboard = () => {
                       </tbody>
                     </table>
                   </div>
+                  {hasMoreUsers && (
+                    <div className="p-4 border-t border-gray-100 text-center">
+                      <button onClick={loadMoreUsers} disabled={loadingUsers}
+                        className="text-sm text-primary-600 hover:text-primary-700 font-semibold disabled:opacity-50">
+                        {loadingUsers ? <Loader2 size={16} className="animate-spin inline" /> : "Load more users"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
-            {tab==="analytics" && <AnalyticsDashboard />}
+            {tab==="analytics" && (
+              <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 size={24} className="animate-spin text-gray-400" /></div>}>
+                <AnalyticsDashboard />
+              </Suspense>
+            )}
 
             {tab==="storage" && (
               <div className="space-y-6">
@@ -669,6 +807,18 @@ const AdminDashboard = () => {
               </div>
             )}
 
+            {tab==="timeline" && (
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <Clock size={16} className="text-gray-400"/>
+                  <h3 className="font-bold text-gray-900 text-sm">Recent Admin Activity</h3>
+                </div>
+                <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 size={20} className="animate-spin text-gray-400" /></div>}>
+                  <ActivityTimeline />
+                </Suspense>
+              </div>
+            )}
+
             {tab==="audit" && (
               <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 size={24} className="animate-spin text-gray-400" /></div>}>
                 <AuditLog />
@@ -683,7 +833,7 @@ const AdminDashboard = () => {
           <div className="bg-white border border-gray-200 rounded-3xl w-full max-w-lg shadow-2xl">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
               <h3 className="font-bold text-gray-900">Claim Details</h3>
-              <button onClick={()=>setSelectedClaim(null)} className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-colors"><X size={18}/></button>
+                    <button onClick={()=>setSelectedClaim(null)} className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-colors" aria-label="Close claim details"><X size={18}/></button>
             </div>
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-3">
@@ -729,9 +879,9 @@ const AdminDashboard = () => {
       )}
 
       {selectedItem && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={()=>setSelectedItem(null)}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={()=>setSelectedSelectedItem(null)}>
           <div className="relative max-w-2xl w-full">
-            <button onClick={()=>setSelectedItem(null)} className="absolute -top-10 right-0 text-white/80 hover:text-white"><X size={24}/></button>
+            <button onClick={()=>setSelectedSelectedItem(null)} className="absolute -top-10 right-0 text-white/80 hover:text-white"><X size={24}/></button>
             <img src={selectedItem.imageUrl} alt={selectedItem.title} className="w-full rounded-2xl shadow-2xl"/>
             <p className="text-center text-white font-bold mt-3">{selectedItem.title}</p>
           </div>

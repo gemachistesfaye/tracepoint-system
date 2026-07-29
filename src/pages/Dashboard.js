@@ -4,10 +4,12 @@ import { useAuth } from "../context/AuthContext";
 import { useItems } from "../context/ItemsContext";
 import { findMatches, matchLabel } from "../utils/matching";
 import ItemCard from "../components/items/ItemCard";
+import { ItemCardSkeleton } from "../components/common/Skeletons";
 import {
   PlusCircle, Search, Zap, ArrowRight, Package,
   CheckCircle, MapPin, Loader2, TrendingUp,
 } from "lucide-react";
+import { trackMatchFound } from "../utils/logger";
 
 const CampusMap = lazy(() => import("../components/map/CampusMap"));
 
@@ -34,6 +36,7 @@ const Dashboard = () => {
       return true;
     }).sort((a, b) => b.score - a.score).slice(0, 4);
     setAiMatches(unique);
+    if (unique.length > 0) trackMatchFound(unique[0].score);
     setLoadingMatches(false);
   }, [items]);
 
@@ -196,7 +199,7 @@ const Dashboard = () => {
         </div>
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => <div key={i} className="bg-gray-100 rounded-2xl h-64 animate-pulse" />)}
+            {[...Array(6)].map((_, i) => <ItemCardSkeleton key={i} />)}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

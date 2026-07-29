@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useItems } from "../context/ItemsContext";
 import ItemCard from "../components/items/ItemCard";
+import { ItemCardSkeleton } from "../components/common/Skeletons";
 import { CATEGORIES, LOCATIONS, searchItems } from "../utils/helpers";
 import { Search as SearchIcon, X } from "lucide-react";
+import { trackSearchPerformed } from "../utils/logger";
 
 const Search = () => {
   const { items, loading } = useItems();
@@ -18,6 +20,14 @@ const Search = () => {
 
   const hasFilters = query || type || category || location;
   const selectClass = "bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all";
+
+  const trackedRef = useRef("");
+  useEffect(() => {
+    if (query && query !== trackedRef.current) {
+      trackedRef.current = query;
+      trackSearchPerformed(query.length, results.length);
+    }
+  }, [query, results.length]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -57,12 +67,12 @@ const Search = () => {
       </div>
 
       {hasFilters && (
-        <p className="text-sm text-gray-500 mb-4">{results.length} result{results.length !== 1 ? "s" : ""} found</p>
+        <p className="text-sm text-gray-500 mb-4" aria-live="polite">{results.length} result{results.length !== 1 ? "s" : ""} found</p>
       )}
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {[...Array(8)].map((_, i) => <div key={i} className="bg-gray-100 rounded-2xl h-64 animate-pulse" />)}
+          {[...Array(8)].map((_, i) => <ItemCardSkeleton key={i} />)}
         </div>
       ) : results.length === 0 ? (
         <div className="text-center py-24 text-gray-400">

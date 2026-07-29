@@ -1,7 +1,7 @@
 import React, { useEffect, useState, lazy, Suspense } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getItem, deleteItem, updateItem, addNotification, getAllItems } from "../firebase/firestore";
+import { getItem, deleteItem, updateItem, addNotification, getRecentItems } from "../firebase/firestore";
 import { deleteImage } from "../firebase/storage";
 import ClaimModal from "../components/claims/ClaimModal";
 import { timeAgo, STATUS_LABELS } from "../utils/helpers";
@@ -10,9 +10,10 @@ import toast from "react-hot-toast";
 import {
   MapPin, Calendar, Tag, Phone, User, ArrowLeft, Trash2,
   CheckCircle, Loader2, AlertCircle, Zap, Clock, AlertTriangle,
-  MessageSquare,
+  MessageSquare, QrCode,
 } from "lucide-react";
 import { getOrCreateConversation } from "../firebase/firestore";
+import QRCode from "../components/common/QRCode";
 
 const CampusMap = lazy(() => import("../components/map/CampusMap"));
 
@@ -30,7 +31,7 @@ const ItemDetail = () => {
 
   useEffect(() => {
     const load = async () => {
-      const [data, items] = await Promise.all([getItem(id), getAllItems()]);
+      const [data, items] = await Promise.all([getItem(id), getRecentItems(100)]);
       setItem(data);
       if (data) {
         setAiMatches(findMatches(data, items, 25, 3));
@@ -236,6 +237,21 @@ const ItemDetail = () => {
               ))}
             </div>
           </div>
+
+          {item.status === "resolved" && (
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <QrCode size={16} className="text-primary-500" />
+                <h3 className="font-bold text-gray-900 text-sm">Return QR Code</h3>
+              </div>
+              <p className="text-xs text-gray-500 mb-3">Show this QR code when returning the item to verify the handoff.</p>
+              <QRCode
+                value={`https://tracepoint.app/items/${item.id}?action=return&verified=true`}
+                size={180}
+                label={`Item: ${item.title}`}
+              />
+            </div>
+          )}
 
           {aiMatches.length > 0 && (
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
